@@ -38,6 +38,16 @@ export interface GHRepo {
   default_branch?: string;
 }
 
+export interface GHRelease {
+  id: number;
+  tag_name: string;
+  name: string | null;
+  published_at: string;
+  prerelease: boolean;
+  draft: boolean;
+  html_url: string;
+}
+
 export interface SearchResult {
   total_count: number;
   incomplete_results: boolean;
@@ -234,3 +244,45 @@ export function relTime(iso: string, locale = 'en-GB'): string {
 export function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
+
+/* ------------------------------------------------------------------ */
+/* Organizations                                                       */
+/* ------------------------------------------------------------------ */
+
+export interface GHOrg {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  html_url: string;
+  description: string | null;
+  blog: string | null;
+  email: string | null;
+  location: string | null;
+  twitter_username: string | null;
+  public_repos: number;
+  followers: number;
+  is_verified: boolean;
+  created_at: string;
+}
+
+export const fetchOrg = (login: string, token: string | null): Promise<GHOrg> =>
+  ghFetch<GHOrg>(`${API}/orgs/${enc(login)}`, token, 'Organization');
+
+export const fetchOrgRepos = (login: string, token: string | null): Promise<GHRepo[]> =>
+  ghFetch<GHRepo[]>(`${API}/orgs/${enc(login)}/repos?per_page=100&sort=pushed`, token, 'Organization');
+
+/* ------------------------------------------------------------------ */
+/* Single repo detail + latest release                                 */
+/* ------------------------------------------------------------------ */
+
+export interface GHRepoDetail extends GHRepo {
+  license: { spdx_id: string | null; name: string | null } | null;
+  default_branch: string;
+  subscribers_count: number;
+}
+
+export const fetchRepoDetail = (fullName: string, token: string | null): Promise<GHRepoDetail> =>
+  ghFetch<GHRepoDetail>(`${API}/repos/${fullName}`, token, 'Repository');
+
+export const fetchLatestRelease = (fullName: string, token: string | null): Promise<GHRelease> =>
+  ghFetch<GHRelease>(`${API}/repos/${fullName}/releases/latest`, token, 'Release');

@@ -212,3 +212,91 @@ export const IconTrash = (p: P) => (
     <path d="M4 6.5h16M9.5 6V4.5A1.5 1.5 0 0 1 11 3h2a1.5 1.5 0 0 1 1.5 1.5V6M6.5 6.5l.8 12.5a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12.5M10 10.5v6M14 10.5v6" />
   </Svg>
 );
+
+export const IconUsers = (p: P) => (
+  <Svg {...p}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M18.5 14.5A6 6 0 0 1 21 20" />
+  </Svg>
+);
+
+export const IconFolder = (p: P) => (
+  <Svg {...p}>
+    <path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4.5l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 19.5H5A1.5 1.5 0 0 1 3.5 18z" />
+  </Svg>
+);
+
+export const IconRadar = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="4.5" opacity=".5" />
+    <path d="M12 12 18 6" />
+    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+  </Svg>
+);
+
+export const IconTag = (p: P) => (
+  <Svg {...p}>
+    <path d="M3.5 10.5v-7h7l10 10-7 7z" />
+    <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none" />
+  </Svg>
+);
+
+export const IconFlame = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 3.5c.6 2.9-2.8 4.7-2.8 8a2.8 2.8 0 0 0 5.6.4c1.6 1.1 2.7 2.8 2.7 4.6a5.5 5.5 0 0 1-11 0C6.5 10.2 12 8.7 12 3.5z" />
+  </Svg>
+);
+
+export const IconSwap = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 8h13m0 0-3-3m3 3-3 3M20 16H7m0 0 3-3m-3 3 3 3" />
+  </Svg>
+);
+
+export const IconTranslate = (p: P) => (
+  <Svg {...p}>
+    <path d="M3.5 6h9.5M8 3.5V6M10.5 6c-.8 3.6-3.6 6.6-7 8M6 9.5c1.6 2.4 4.2 4.1 7 4.7" />
+    <path d="m14 20.5 3.4-9 3.4 9M15.2 17.5h4.4" />
+  </Svg>
+);
+
+export const IconRepoCompare = (p: P) => (
+  <Svg {...p}>
+    <path d="M5.5 4v16M18.5 4v16" />
+    <path d="M9 9.5h7M13.8 7.3l2.2 2.2-2.2 2.2M15 14.5H8M10.2 12.3 8 14.5l2.2 2.2" />
+  </Svg>
+);
+
+export const IconKey = (p: P) => (
+  <Svg {...p}>
+    <circle cx="8" cy="14.5" r="4.5" />
+    <path d="M11.5 11 20 2.5M16 6.5l2.5 2.5M13.5 9l2 2" />
+  </Svg>
+);
+
+export const IconGraph = (p: P) => (
+  <Svg {...p}>
+    <path d="M3.5 20.5h17M6 16l4-5 3.5 3L19 6.5M19 11V6.5H14.5" />
+  </Svg>
+);
+
+export const IconVerified = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 2.8 14.4 5l3.2-.2.7 3.1 2.8 1.6-1.3 2.9 1.3 2.9-2.8 1.6-.7 3.1-3.2-.2-2.4 2.2L9.6 20l-3.2.2-.7-3.1-2.8-1.6 1.3-2.9-1.3-2.9 2.8-1.6.7-3.1L9.6 5z" />
+    <path d="m8.8 12.2 2.2 2.2 4.2-4.6" />
+  </Svg>
+);
+
+export const IconTrophy = (p: P) => (
+  <Svg {...p}>
+    <path d="M8 4h8v5a4 4 0 0 1-8 0zM8 5H4.5v1.5A3.5 3.5 0 0 0 8 10M16 5h3.5v1.5A3.5 3.5 0 0 1 16 10M12 13v3.5M9 20.5h6M10.2 16.5h3.6l.7 4H9.5z" />
+  </Svg>
+);
+
+export const IconMail = (p: P) => (
+  <Svg {...p}>
+    <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+    <path d="m4.5 7.5 7.5 5.5 7.5-5.5" />
+  </Svg>
+);
