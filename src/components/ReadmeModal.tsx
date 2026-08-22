@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import type { GHRepo } from '../lib/github';
 import { GHError, fetchReadme } from '../lib/github';
 import { Markdown } from '../lib/markdown';
+import { useTranslator } from '../lib/translate';
 import { useT } from '../lib/i18n';
-import { IconAlert, IconArrow, IconExternal, IconX } from './Icons';
+import { IconAlert, IconArrow, IconExternal, IconTranslate, IconX } from './Icons';
 
 interface Props {
   repo: GHRepo;
@@ -16,12 +17,14 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
   const t = useT();
   const [md, setMd] = useState<string | null>(null);
   const [error, setError] = useState<GHError | null>(null);
+  const tr = useTranslator('ru');
   const branch = repo.default_branch ?? 'main';
 
   useEffect(() => {
     let alive = true;
     setMd(null);
     setError(null);
+    tr.reset();
     fetchReadme(repo.full_name, branch, token)
       .then((text: string) => {
         if (alive) setMd(text);
@@ -32,6 +35,7 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repo.full_name, branch, token]);
 
   useEffect(() => {
@@ -72,6 +76,20 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
           </span>
 
           <span className="ml-auto flex shrink-0 flex-wrap items-center gap-1.5">
+            {md && (
+              <button
+                type="button"
+                onClick={() => tr.toggle(md)}
+                disabled={tr.busy}
+                title={t.readme.machineNote}
+                className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${
+                  tr.active ? 'border-mint/60 bg-mint/10 text-mint' : 'border-line text-mut hover:border-mint/60 hover:text-mint'
+                }`}
+              >
+                <IconTranslate size={11} />
+                {tr.busy ? t.readme.translating(tr.progress[0], tr.progress[1]) : tr.active ? t.readme.original : t.readme.translate}
+              </button>
+            )}
             {onOpenDetail && (
               <button
                 type="button"
@@ -121,6 +139,12 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
           </span>
         </div>
 
+        {tr.active && (
+          <div className="border-b border-line px-4 py-1.5 font-mono text-[11px] text-mut/80">
+            {tr.failed ? t.readme.fail : t.readme.machineNote}
+          </div>
+        )}
+
         <div className="max-h-[72vh] overflow-y-auto p-5 sm:p-6">
           {error && (
             <div className="flex items-center gap-2.5 rounded-lg border border-coral/40 bg-coral/10 px-3 py-2.5">
@@ -131,7 +155,7 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
           {!md && !error && <div className="shimmer h-56 w-full rounded-lg" aria-label={t.readme.loading} />}
           {md && (
             <Markdown
-              source={md}
+              source={tr.translated ?? md}
               imageBase={imageBase}
               truncatedNotice={
                 <a href={repo.html_url} target="_blank" rel="noreferrer" className="text-sky underline">

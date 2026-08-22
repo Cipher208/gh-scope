@@ -14,6 +14,12 @@ import { LangProvider, useLang, useLocale, useT } from './lib/i18n';
 import { RepoCard } from './components/RepoCard';
 import { ReadmeModal } from './components/ReadmeModal';
 import { SearchView } from './components/SearchView';
+import { CompareView } from './components/CompareView';
+import { RepoDuelView } from './components/RepoDuelView';
+import { CollectionsView, CollectionPicker, type Collection } from './components/CollectionsView';
+import { WatchtowerView, type WatchEntry } from './components/WatchtowerView';
+import { DiscoverView } from './components/DiscoverView';
+import { OrgView } from './components/OrgView';
 import {
   IconAlert,
   IconAt,
@@ -23,20 +29,28 @@ import {
   IconCalendar,
   IconChevronDown,
   IconDownload,
+  IconFlame,
+  IconFolder,
   IconLink,
   IconMoon,
   IconPin,
+  IconRadar,
+  IconRepoCompare,
+  IconScale,
   IconSearch,
   IconSun,
   IconTerminal,
   IconTrash,
+  IconUsers,
 } from './components/Icons';
 
 const THEME_KEY = 'ghscope:theme';
 const HISTORY_KEY = 'ghscope:history';
 const BOOKMARKS_KEY = 'ghscope:bookmarks';
+const COLLECTIONS_KEY = 'ghscope:collections';
+const WATCH_KEY = 'ghscope:watch';
 
-type View = 'browse' | 'search' | 'saved';
+type View = 'browse' | 'search' | 'orgs' | 'compare' | 'duel' | 'collections' | 'radar' | 'discover' | 'saved';
 
 interface Profile {
   user: GHUser;
@@ -193,6 +207,122 @@ function Shell() {
     [],
   );
   const bookmarkedIds = useMemo(() => new Set(bookmarks.map((r) => r.id)), [bookmarks]);
+
+  /* collections */
+  const [collections, setCollections] = useState<Collection[]>(() => {
+    try {
+      const raw = localStorage.getItem(COLLECTIONS_KEY);
+      const arr = raw ? (JSON.parse(raw) as unknown) : [];
+      return Array.isArray(arr) ? (arr as Collection[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const persistCollections = useCallback((next: Collection[]) => {
+    setCollections(next);
+    try {
+      localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(next));
+    } catch {
+      /* private mode */
+    }
+  }, []);
+  const createCollection = useCallback(
+    (name: string) => {
+      const now = new Date().toISOString();
+      persistCollections([{ id: `c${Date.now()}`, name, items: [], createdAt: now }, ...collections]);
+    },
+    [collections, persistCollections],
+  );
+  const deleteCollection = useCallback(
+    (id: string) => persistCollections(collections.filter((c) => c.id !== id)),
+    [collections, persistCollections],
+  );
+  const toggleInCollection = useCallback(
+    (colId: string, repo: GHRepo) => {
+      const now = new Date().toISOString();
+      persistCollections(
+        collections.map((c) => {
+          if (c.id !== colId) return c;
+          const exists = c.items.some((it) => it.fullName === repo.full_name);
+          return {
+            ...c,
+            items: exists
+              ? c.items.filter((it) => it.fullName !== repo.full_name)
+              : [{ fullName: repo.full_name, repo, addedAt: now }, ...c.items],
+          };
+        }),
+      );
+    },
+    [collections, persistCollections],
+  );
+  const removeCollectionItem = useCallback(
+    (id: string, fullName: string) => {
+      persistCollections(
+        collections.map((c) => (c.id === id ? { ...c, items: c.items.filter((it) => it.fullName !== fullName) } : c)),
+      );
+    },
+    [collections, persistCollections],
+  );
+  const createAndAdd = useCallback(
+    (name: string, repo: GHRepo) => {
+      const now = new Date().toISOString();
+      persistCollections([
+        { id: `c${Date.now()}`, name, items: [{ fullName: repo.full_name, repo, addedAt: now }], createdAt: now },
+        ...collections,
+      ]);
+      setPickFor(null);
+    },
+    [collections, persistCollections],
+  );
+  const [pickFor, setPickFor] = useState<GHRepo | null>(null);
+
+  /* watchtower */
+  const [watchEntries, setWatchEntries] = useState<WatchEntry[]>(() => {
+    try {
+      const raw = localStorage.getItem(WATCH_KEY);
+      const arr = raw ? (JSON.parse(raw) as unknown) : [];
+      return Array.isArray(arr) ? (arr as WatchEntry[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const persistWatch = useCallback((next: WatchEntry[]) => {
+    setWatchEntries(next);
+    try {
+      localStorage.setItem(WATCH_KEY, JSON.stringify(next));
+    } catch {
+      /* private mode */
+    }
+  }, []);
+  const toggleWatch = useCallback(
+    (repo: GHRepo) => {
+      const exists = watchEntries.some((w) => w.fullName === repo.full_name);
+      if (exists) {
+        persistWatch(watchEntries.filter((w) => w.fullName !== repo.full_name));
+        return;
+      }
+      const now = new Date().toISOString();
+      const entry: WatchEntry = {
+        fullName: repo.full_name,
+        name: repo.name,
+        owner: repo.full_name.split('/')[0],
+        language: repo.language,
+        htmlUrl: repo.html_url,
+        addedAt: now,
+        capturedAt: now,
+        stars: repo.stargazers_count,
+        forks: repo.forks_count,
+        pushedAt: repo.pushed_at,
+        dStars: null,
+        dForks: null,
+        newPush: false,
+        history: [{ t: now, stars: repo.stargazers_count }],
+      };
+      persistWatch([entry, ...watchEntries]);
+    },
+    [watchEntries, persistWatch],
+  );
+  const watchedFulls = useMemo(() => new Set(watchEntries.map((w) => w.fullName)), [watchEntries]);
 
   /* rate limit */
   const [rate, setRate] = useState<RateInfo | null>(null);
@@ -356,6 +486,12 @@ function Shell() {
   const navItems: Array<{ key: View; label: string; icon: ReactNode; badge?: number; tone: string }> = [
     { key: 'browse', label: t.nav.browse, icon: <IconBook size={13} />, tone: 'bg-amber/15 text-amber' },
     { key: 'search', label: t.nav.search, icon: <IconSearch size={13} />, tone: 'bg-sky/15 text-sky' },
+    { key: 'discover', label: t.nav.discover, icon: <IconFlame size={13} />, tone: 'bg-coral/15 text-coral' },
+    { key: 'orgs', label: t.nav.orgs, icon: <IconUsers size={13} />, tone: 'bg-mint/15 text-mint' },
+    { key: 'compare', label: t.nav.compare, icon: <IconScale size={13} />, tone: 'bg-coral/15 text-coral' },
+    { key: 'duel', label: t.nav.duel, icon: <IconRepoCompare size={13} />, tone: 'bg-sky/15 text-sky' },
+    { key: 'collections', label: t.nav.collections, icon: <IconFolder size={13} />, tone: 'bg-amber/15 text-amber', badge: collections.length },
+    { key: 'radar', label: t.nav.watchtower, icon: <IconRadar size={13} />, tone: 'bg-mint/15 text-mint', badge: watchEntries.length },
     { key: 'saved', label: 'saved', icon: <IconBookmark size={13} />, tone: 'bg-mint/15 text-mint', badge: bookmarks.length },
   ];
 
@@ -440,6 +576,51 @@ function Shell() {
           />
         )}
 
+        {view === 'discover' && (
+          <DiscoverView
+            onOpenDetail={(full) => window.open(`https://github.com/${full}`, '_blank', 'noreferrer')}
+            onOpenOwner={openOwner}
+            bookmarkedIds={bookmarkedIds}
+            onToggleBookmark={toggleBookmark}
+            onReadme={setReadmeFor}
+          />
+        )}
+
+        {view === 'orgs' && (
+          <OrgView
+            token={null}
+            onOpenDetail={(full) => window.open(`https://github.com/${full}`, '_blank', 'noreferrer')}
+            onOpenOwner={openOwner}
+            bookmarkedIds={bookmarkedIds}
+            onToggleBookmark={toggleBookmark}
+            onReadme={setReadmeFor}
+          />
+        )}
+
+        {view === 'compare' && <CompareView onOpenOwner={openOwner} />}
+
+        {view === 'duel' && <RepoDuelView />}
+
+        {view === 'collections' && (
+          <CollectionsView
+            collections={collections}
+            onCreate={createCollection}
+            onDelete={deleteCollection}
+            onRemoveItem={removeCollectionItem}
+            onOpenDetail={(full) => window.open(`https://github.com/${full}`, '_blank', 'noreferrer')}
+          />
+        )}
+
+        {view === 'radar' && (
+          <WatchtowerView
+            entries={watchEntries}
+            onPersist={persistWatch}
+            onRemove={(full) => persistWatch(watchEntries.filter((w) => w.fullName !== full))}
+            onOpenDetail={(full) => window.open(`https://github.com/${full}`, '_blank', 'noreferrer')}
+            onOpenOwner={openOwner}
+          />
+        )}
+
         {view === 'saved' && (
           <div className="flex flex-col gap-6">
             {bookmarks.length === 0 ? (
@@ -486,6 +667,9 @@ function Shell() {
                       bookmarked
                       onToggleBookmark={toggleBookmark}
                       onOpenOwner={openOwner}
+                      onCollect={setPickFor}
+                      watched={watchedFulls.has(r.full_name)}
+                      onWatch={toggleWatch}
                     />
                   ))}
                 </div>
@@ -880,6 +1064,9 @@ function Shell() {
                           bookmarked={bookmarkedIds.has(r.id)}
                           onToggleBookmark={toggleBookmark}
                           onOpenOwner={openOwner}
+                          onCollect={setPickFor}
+                          watched={watchedFulls.has(r.full_name)}
+                          onWatch={toggleWatch}
                         />
                       ))}
                     </div>
@@ -907,6 +1094,19 @@ function Shell() {
       </footer>
 
       {readmeFor && <ReadmeModal repo={readmeFor} token={null} onClose={() => setReadmeFor(null)} />}
+
+      {pickFor && (
+        <CollectionPicker
+          repo={pickFor}
+          collections={collections}
+          onClose={() => setPickFor(null)}
+          onAdd={(colId) => {
+            toggleInCollection(colId, pickFor);
+            setPickFor(null);
+          }}
+          onCreateAndAdd={(name) => createAndAdd(name, pickFor)}
+        />
+      )}
     </div>
   );
 }

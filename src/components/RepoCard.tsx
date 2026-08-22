@@ -10,9 +10,11 @@ import {
   IconCopy,
   IconEye,
   IconFile,
+  IconFolder,
   IconFork,
   IconIssue,
   IconLock,
+  IconRadar,
   IconStar,
 } from './Icons';
 
@@ -29,6 +31,9 @@ interface Props {
   onOpenOwner?: (login: string) => void;
   onOpenDetail?: (fullName: string) => void;
   animate?: boolean;
+  onCollect?: (repo: GHRepo) => void;
+  watched?: boolean;
+  onWatch?: (repo: GHRepo) => void;
 }
 
 export function RepoCard({
@@ -40,6 +45,9 @@ export function RepoCard({
   onOpenOwner,
   onOpenDetail,
   animate = true,
+  onCollect,
+  watched,
+  onWatch,
 }: Props) {
   const t = useT();
   const locale = useLocale();
@@ -144,6 +152,31 @@ export function RepoCard({
               }`}
             >
               <IconBookmark size={14} {...(bookmarked ? { fill: 'currentColor' } : {})} />
+            </button>
+          )}
+          {onWatch && (
+            <button
+              type="button"
+              onClick={() => onWatch(repo)}
+              title={watched ? t.card.watchDel : t.card.watchAdd}
+              aria-label={watched ? t.card.watchDel : t.card.watchAdd}
+              aria-pressed={watched}
+              className={`rounded-md border border-transparent p-1 transition-all duration-200 hover:border-line hover:bg-raise active:scale-90 ${
+                watched ? 'text-mint' : 'text-mut hover:text-mint'
+              }`}
+            >
+              <IconRadar size={14} />
+            </button>
+          )}
+          {onCollect && (
+            <button
+              type="button"
+              onClick={() => onCollect(repo)}
+              title={t.card.collectT}
+              aria-label={t.card.collectT}
+              className="rounded-md border border-transparent p-1 text-mut transition-all duration-200 hover:border-line hover:bg-raise hover:text-amber active:scale-90"
+            >
+              <IconFolder size={14} />
             </button>
           )}
           <button

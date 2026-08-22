@@ -286,3 +286,17 @@ export const fetchRepoDetail = (fullName: string, token: string | null): Promise
 
 export const fetchLatestRelease = (fullName: string, token: string | null): Promise<GHRelease> =>
   ghFetch<GHRelease>(`${API}/repos/${fullName}/releases/latest`, token, 'Release');
+
+export function accountYears(createdIso: string): number {
+  return Math.max(1, Math.round((Date.now() - +new Date(createdIso)) / (365.25 * 24 * 3600 * 1000)));
+}
+
+export function downloadFile(name: string, content: string, mime = 'text/plain;charset=utf-8') {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
