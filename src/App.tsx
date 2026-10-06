@@ -20,6 +20,7 @@ import { CollectionsView, CollectionPicker, type Collection } from './components
 import { WatchtowerView, type WatchEntry } from './components/WatchtowerView';
 import { DiscoverView } from './components/DiscoverView';
 import { OrgView } from './components/OrgView';
+import { SettingsModal } from './components/SettingsModal';
 import {
   IconAlert,
   IconAt,
@@ -31,7 +32,9 @@ import {
   IconDownload,
   IconFlame,
   IconFolder,
+  IconKey,
   IconLink,
+  IconLock,
   IconMoon,
   IconPin,
   IconRadar,
@@ -49,6 +52,27 @@ const HISTORY_KEY = 'ghscope:history';
 const BOOKMARKS_KEY = 'ghscope:bookmarks';
 const COLLECTIONS_KEY = 'ghscope:collections';
 const WATCH_KEY = 'ghscope:watch';
+const TOKEN_KEY = 'ghscope:token';
+
+/* The API layer has taken a token from the start — `fetchMe`, `fetchMyRepos`
+ * and the `authenticated` flag on the rate meter all expect one. The UI just
+ * never asked for it, so every call site passed `null`. */
+function readToken(): string {
+  try {
+    return localStorage.getItem(TOKEN_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function writeToken(value: string) {
+  try {
+    if (value) localStorage.setItem(TOKEN_KEY, value);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* private mode */
+  }
+}
 
 type View = 'browse' | 'search' | 'orgs' | 'compare' | 'duel' | 'collections' | 'radar' | 'discover' | 'saved';
 
@@ -180,6 +204,14 @@ function Shell() {
       /* private mode */
     }
   }, [theme]);
+
+  /* github token — empty string means anonymous */
+  const [token, setToken] = useState<string>(readToken);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const updateToken = useCallback((value: string) => {
+    writeToken(value);
+    setToken(value);
+  }, []);
 
   /* bookmarks */
   const [bookmarks, setBookmarks] = useState<GHRepo[]>(readBookmarks);
@@ -362,7 +394,10 @@ function Shell() {
       setError(null);
       setPendingLogin(login);
       try {
-        const [user, repos] = await Promise.all([fetchUser(login, null), fetchRepos(login, null)]);
+        const [user, repos] = await Promise.all([
+          fetchUser(login, token || null),
+          fetchRepos(login, token || null),
+        ]);
         setProfile({ user, repos });
         setLoginInput(user.login);
         setQuery('');
@@ -379,7 +414,7 @@ function Shell() {
         setPendingLogin(null);
       }
     },
-    [busy, pushHistory],
+    [busy, pushHistory, token],
   );
 
   /* initial load: deep link #login or most recent */
@@ -395,9 +430,14 @@ function Shell() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setReadmeFor(null);
+        setSettingsOpen(false);
         return;
       }
       if (e.key === '/') {
+        // The settings modal owns the keyboard while it is open; focusing a
+        // search box behind an overlay would take the caret away from the
+        // field the visitor is actually typing in.
+        if (settingsOpen) return;
         const tag = (document.activeElement?.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
         const target =
@@ -411,7 +451,7 @@ function Shell() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [settingsOpen]);
 
   const openOwner = useCallback(
     (login: string) => {
@@ -501,9 +541,19 @@ function Shell() {
       <div className="glow glow-a" aria-hidden="true" />
       <div className="glow glow-b" aria-hidden="true" />
 
-      {/* header */}
+      {/* header
+        *
+        * Two rows, because one could not hold the navigation. Measured: the
+        * nine tabs need 909px once labels are on, and the container caps at
+        * max-w-7xl; sharing a row with the brand and the action cluster left
+        * the nav 714px even on a 1920px screen, so "watchtower" and "saved"
+        * sat behind a horizontal scroll that showed no sign of existing.
+        * Giving the nav its own row hands it the full container width, which
+        * fits at 1024px and up; below that the labels drop to icons and the
+        * 337px strip fits every phone.
+        */}
       <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 sm:gap-x-3 sm:px-6">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber/40 bg-amber/10 text-amber">
             <IconTerminal size={16} />
           </span>
@@ -511,29 +561,6 @@ function Shell() {
           <span className="hidden rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-mut lg:inline">
             v8
           </span>
-
-          <nav className="ml-2 flex items-center gap-1 overflow-x-auto rounded-lg border border-line bg-panel/70 p-1 sm:ml-4" aria-label="View">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => setView(item.key)}
-                aria-pressed={view === item.key}
-                title={item.label}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-xs transition-all duration-200 sm:px-3 ${
-                  view === item.key ? item.tone : 'text-mut hover:text-ink'
-                }`}
-              >
-                {item.icon}
-                <span className="hidden md:inline">{item.label}</span>
-                {typeof item.badge === 'number' && item.badge > 0 && (
-                  <span className={`rounded-full px-1.5 font-mono text-[10px] tnum ${view === item.key ? 'bg-amber/20' : 'bg-raise text-mut'}`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
             {rate && <RateMeter rate={rate} />}
@@ -546,9 +573,26 @@ function Shell() {
             >
               {lang === 'en' ? 'RU' : 'EN'}
             </button>
-            <span className="hidden items-center gap-1.5 rounded-md border border-line px-2 py-1 font-mono text-[11px] text-mut xl:inline-flex">
-              {t.chrome.publicApi}
+            <span
+              className={`hidden items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-[11px] xl:inline-flex ${
+                token ? 'border-mint/40 text-mint' : 'border-line text-mut'
+              }`}
+            >
+              {token ? t.chrome.authedApi : t.chrome.publicApi}
             </span>
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              aria-label={t.settings.title}
+              title={t.settings.title}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300 hover:-translate-y-px ${
+                token
+                  ? 'border-mint/50 text-mint'
+                  : 'border-line text-mut hover:border-mint/60 hover:text-mint'
+              }`}
+            >
+              <IconKey size={15} />
+            </button>
             <button
               type="button"
               onClick={() => setTheme((th) => (th === 'dark' ? 'light' : 'dark'))}
@@ -559,13 +603,39 @@ function Shell() {
               {theme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />}
             </button>
           </div>
+
+          <nav
+            className="nav-strip order-last flex w-full items-center gap-1 overflow-x-auto rounded-lg border border-line bg-panel/70 p-1"
+            aria-label="View"
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setView(item.key)}
+                aria-pressed={view === item.key}
+                title={item.label}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-xs transition-all duration-200 sm:px-3 ${
+                  view === item.key ? item.tone : 'text-mut hover:text-ink'
+                }`}
+              >
+                {item.icon}
+                <span className="hidden lg:inline">{item.label}</span>
+                {typeof item.badge === 'number' && item.badge > 0 && (
+                  <span className={`rounded-full px-1.5 font-mono text-[10px] tnum ${view === item.key ? 'bg-amber/20' : 'bg-raise text-mut'}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
         </div>
       </header>
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6">
         {view === 'search' && (
           <SearchView
-            token={null}
+            token={token || null}
             onOpenDetail={(full) => {
               window.open(`https://github.com/${full}`, '_blank', 'noreferrer');
             }}
@@ -588,7 +658,7 @@ function Shell() {
 
         {view === 'orgs' && (
           <OrgView
-            token={null}
+            token={token || null}
             onOpenDetail={(full) => window.open(`https://github.com/${full}`, '_blank', 'noreferrer')}
             onOpenOwner={openOwner}
             bookmarkedIds={bookmarkedIds}
@@ -961,6 +1031,19 @@ function Shell() {
                       <span className="font-mono text-xs text-mut">
                         <span className="text-amber tnum">{totalStars.toLocaleString('en-US')}</span> {t.browse.earned}
                       </span>
+                      {/* `privateNote` was written for the token feature and then
+                          never rendered, because the token was never wired. Now
+                          that it is, the string finally has a place: without it
+                          a visitor sees private repos appear and has no
+                          explanation for why. */}
+                      {(() => {
+                        const priv = profile.repos.filter((r) => r.private).length;
+                        return priv > 0 ? (
+                          <span className="inline-flex items-center gap-1 rounded-md border border-mint/40 bg-mint/10 px-2 py-0.5 font-mono text-[11px] text-mint">
+                            <IconLock size={11} /> {t.profile.privateNote(priv)}
+                          </span>
+                        ) : null;
+                      })()}
                       <button
                         type="button"
                         onClick={exportJson}
@@ -1093,7 +1176,7 @@ function Shell() {
         </div>
       </footer>
 
-      {readmeFor && <ReadmeModal repo={readmeFor} token={null} onClose={() => setReadmeFor(null)} />}
+      {readmeFor && <ReadmeModal repo={readmeFor} token={token || null} onClose={() => setReadmeFor(null)} />}
 
       {pickFor && (
         <CollectionPicker
@@ -1105,6 +1188,14 @@ function Shell() {
             setPickFor(null);
           }}
           onCreateAndAdd={(name) => createAndAdd(name, pickFor)}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsModal
+          token={token}
+          onTokenChange={updateToken}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
     </div>
