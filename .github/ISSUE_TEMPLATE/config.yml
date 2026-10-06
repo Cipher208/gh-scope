@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Cipher208/gh-scope/security/advisories/new
+    about: Please report security problems privately, never as a public issue.
+  - name: Live demo
+    url: https://cipher208.github.io/gh-scope/
+    about: Try the current build before filing a bug — it may already be fixed.
+  - name: Questions and ideas
+    url: https://github.com/Cipher208/gh-scope/discussions
+    about: For open-ended questions that are not a bug report or a feature request.

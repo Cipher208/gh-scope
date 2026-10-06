@@ -1,0 +1,109 @@
+name: Bug report
+description: Something is broken or behaving in a way that surprised you
+title: "[Bug] "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The single most useful thing in a bug report
+        is a way to make it happen again — the rest is context.
+
+        **If this is a security problem, please stop and close this page.**
+        Report it privately via [SECURITY.md](https://github.com/Cipher208/gh-scope/blob/main/SECURITY.md) instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw. If the app showed text, paste it verbatim.
+      placeholder: I clicked "search" and the result list stayed empty, while the header showed 4990/5000.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+      placeholder: A list of repositories, the way it works for the same query without the token.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps. If it only happens sometimes, say so — that is a clue, not a failure.
+      placeholder: |
+        1. Open the live demo
+        2. Paste a token in settings
+        3. Go to search, set min stars to 1000
+        4. Press search
+    validations:
+      required: true
+
+  - type: dropdown
+    id: view
+    attributes:
+      label: Which view
+      options:
+        - Search
+        - Browse (profile)
+        - Orgs
+        - Profiles duel
+        - Repo duel
+        - Collections
+        - Watchtower
+        - Releases
+        - Trending
+        - README viewer
+        - Settings
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did you see it
+      options:
+        - The live demo (cipher208.github.io/gh-scope)
+        - Running locally
+        - A fork or my own deployment
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Firefox 131 on Windows 11, or Safari 18 on iOS 18
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: token
+    attributes:
+      label: Was a GitHub token set in settings?
+      description: This changes the API budget from 60 to 5000 requests an hour, so many differences come down to this.
+      options:
+        - label: A token was set
+        - label: No token
+        - label: Not sure / prefer not to say
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors (optional but very helpful)
+      description: Open the browser developer tools, tab "Console", reproduce the problem, paste anything red.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (optional)
+      description: Drag images here. A picture shortens this conversation by a lot.
+    validations:
+      required: false

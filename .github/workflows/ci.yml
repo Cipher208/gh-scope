@@ -1,0 +1,48 @@
+name: CI
+
+# The verification job. Runs on every push and every pull request, including
+# main — the README badge reads the latest run on the default branch, so a
+# workflow that skipped main would show a permanently stale badge.
+#
+# This overlaps with the build step of the deploy workflow, deliberately: the
+# deploy answers "did it ship", this answers "is the code sound", and the badge
+# next to the project description should mean the second one.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci`, not `npm install`: it installs exactly the lockfile and fails
+      # when package.json and the lock have drifted, which is the check that
+      # keeps CI from testing a dependency tree nobody else will ever get.
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      # The build output is a static site with no dependencies at runtime.
+      # If it is missing the script or the stylesheet, the deploy would ship a
+      # blank page and nothing above would have noticed.
+      - name: Check the bundle is complete
+        run: |
+          test -f dist/index.html
+          grep -q './assets/' dist/index.html
+          ls dist/assets/*.js dist/assets/*.css
