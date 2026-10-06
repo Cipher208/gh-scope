@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# test bundles produced by scripts/run-tests.mjs
+.test-build/
+
 # logs
 logs/
 *.log

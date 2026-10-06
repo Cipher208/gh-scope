@@ -98,11 +98,63 @@ const BADGE_HOSTS = /(shields\.io|badge|circleci|travis|coveralls|codecov|npmjs|
 
 type Resolver = (src: string) => string;
 
+/* A README is written by someone else, so every URL in it is untrusted input.
+ *
+ * React escapes text but does not vet URLs: `<a href="javascript:…">` renders
+ * exactly as written, and clicking it runs script in *this* origin — the one
+ * where the reader's GitHub token sits in localStorage. The sanitiser above
+ * strips HTML tags; the tag stripping is not what makes this safe, and CodeQL
+ * was right to flag it. The real fix belongs here, at the sink.
+ *
+ * Only schemes that cannot execute are allowed through. Everything else the
+ * caller renders as plain text, so the reader still sees what the README said.
+ */
+function safeScheme(raw: string): string | null {
+  const url = raw.trim();
+  if (!url) return null;
+  // Control characters are removed before the scheme is read. Browsers treat
+  // "java\tscript:" and "java\nscript:" as "javascript:", so a check that looks
+  // only at the raw prefix can be walked around — and the HTML-entity decode
+  // upstream means "jav&#x61;script:" arrives here already spelled out.
+  const cleaned = url.replace(/[\u0000-\u0020\u007f]/g, '');
+  const m = /^([a-z][a-z0-9+.-]*):/i.exec(cleaned);
+  // No scheme means a relative or fragment URL: same origin by construction,
+  // and it cannot carry script. Leave it alone — that is how anchor links work.
+  if (!m) return null;
+  return m[1].toLowerCase();
+}
+
+/** An href, or null when the URL could execute script and must not be a link. */
+function safeHref(raw: string): string | null {
+  const scheme = safeScheme(raw);
+  if (scheme === null) return raw.trim() || null;
+  return scheme === 'http' || scheme === 'https' || scheme === 'mailto' ? raw : null;
+}
+
+/**
+ * An image src, or null. Images are read, not run: `data:image/...` is fine,
+ * but `data:text/html` has no business in an <img>, and a scheme we do not
+ * recognise is refused rather than guessed at.
+ */
+function safeSrc(raw: string, resolve: Resolver): string | null {
+  const url = raw.trim();
+  if (!url) return null;
+  const scheme = safeScheme(url);
+  if (scheme === null) return resolve(url);
+  if (scheme === 'http' || scheme === 'https') return resolve(url);
+  if (scheme === 'data' && /^data:image\//i.test(url.replace(/[\u0000-\u0020]/g, ''))) return url;
+  return null;
+}
+
 function ImageNode({ src, alt, resolve }: { src: string; alt: string; resolve: Resolver }) {
   const isBadge = !IMG_EXT.test(src) || BADGE_HOSTS.test(src);
+  const url = safeSrc(src, resolve);
+  // A refused image renders as nothing rather than as a broken-image icon: the
+  // alt text was never going to be shown for a URL we do not trust.
+  if (!url) return null;
   return (
     <img
-      src={resolve(src)}
+      src={url}
       alt={alt}
       loading="lazy"
       referrerPolicy="no-referrer"
@@ -148,20 +200,37 @@ function parseInline(text: string, keyBase: string, resolve: Resolver, depth = 0
       if (IMG_EXT.test(mm[2])) {
         nodes.push(<ImageNode key={key} src={mm[2]} alt={mm[1]} resolve={resolve} />);
       } else {
+        const href = safeHref(mm[2]);
+        const label = depth < MAX_INLINE_DEPTH ? parseInline(mm[1], key, resolve, depth + 1) : mm[1];
         nodes.push(
-          <a key={key} href={mm[2]} target="_blank" rel="noreferrer">
-            {depth < MAX_INLINE_DEPTH ? parseInline(mm[1], key, resolve, depth + 1) : mm[1]}
-          </a>,
+          href ? (
+            <a key={key} href={href} target="_blank" rel="noreferrer">
+              {label}
+            </a>
+          ) : (
+            // Refused. The label is kept as text so the README still reads the
+            // way it was written — the reader just cannot follow it.
+            <span key={key} title="Link blocked: the URL uses a scheme that can execute script">
+              {label}
+            </span>
+          ),
         );
       }
     } else if (m[7]) {
       if (IMG_EXT.test(token)) {
         nodes.push(<ImageNode key={key} src={token} alt="" resolve={resolve} />);
       } else {
+        const href = safeHref(token);
         nodes.push(
-          <a key={key} href={token} target="_blank" rel="noreferrer">
-            {token}
-          </a>,
+          href ? (
+            <a key={key} href={href} target="_blank" rel="noreferrer">
+              {token}
+            </a>
+          ) : (
+            <span key={key} title="Link blocked: the URL uses a scheme that can execute script">
+              {token}
+            </span>
+          ),
         );
       }
     }

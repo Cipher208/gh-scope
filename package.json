@@ -21,7 +21,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/run-tests.mjs"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -32,6 +33,7 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.7",
     "typescript": "^5.7.0",
     "vite": "^6.3.5"
