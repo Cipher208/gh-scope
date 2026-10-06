@@ -121,6 +121,15 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
               {t.readme.gitmcp} <IconExternal size={11} />
             </a>
             <a
+              href={`https://gitdiagram.com/${repo.full_name}`}
+              target="_blank"
+              rel="noreferrer"
+              title={t.readme.gitdiagramT}
+              className="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 font-mono text-[11px] text-mut transition-colors hover:border-sky/60 hover:text-sky"
+            >
+              {t.readme.gitdiagram} <IconExternal size={11} />
+            </a>
+            <a
               href={repo.html_url}
               target="_blank"
               rel="noreferrer"
