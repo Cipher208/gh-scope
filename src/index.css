@@ -26,7 +26,10 @@ html[data-theme="light"] {
   --color-line: #d7dfea;
   --color-ink: #1a2332;
   --color-mut: #5d6c82;
-  --color-amber: #b45e0a;
+  /* Measured: #b45e0a gave 4.08:1 against --color-bg, under the 4.5:1 that
+   * 12–14px text needs, and it is the colour of the active tab and the
+   * wordmark. Darkened until it clears AA with room to spare. */
+  --color-amber: #9a5209;
   --color-mint: #0d7a52;
   --color-coral: #c9354b;
   --color-sky: #1c62c9;
@@ -85,6 +88,30 @@ kbd {
 
 .tnum {
   font-variant-numeric: tabular-nums;
+}
+
+/* iOS Safari zooms the viewport when the field it focuses has a font smaller
+ * than 16px, and this whole UI is set in 11–15px monospace. The alternatives
+ * are turning off pinch-zoom in the viewport meta (which takes a genuinely
+ * useful accessibility feature away from everyone) or writing font-size into
+ * thirteen separate inputs. One rule here beats both. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* The tab strip holds nine items and needs ~909px at full labels; the header
+ * container caps at max-w-7xl and the strip used to get ~714px, so the last
+ * two tabs were unreachable at every viewport width with no hint that the
+ * strip scrolls at all. The nav now takes its own row (see App.tsx) and this
+ * fade marks the right edge as "continues" for the narrow phones where even
+ * that is not enough. */
+.nav-strip {
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 20px), transparent 100%);
 }
 
 .shadow-soft {
