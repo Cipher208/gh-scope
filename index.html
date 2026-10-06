@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
+    <!-- No Cache-Control meta here on purpose. Browsers only honour a meta
+         http-equiv for a short list of names and Cache-Control is not one of
+         them, so these two lines read as a cache policy while doing nothing.
+         GitHub Pages cannot send custom headers either. Dead markup that looks
+         load-bearing is worse than no markup. -->
     <meta
       name="description"
       content="gh-scope — universal GitHub search & explorer: profiles, orgs, repo duels, trending, releases and deep repo cards."

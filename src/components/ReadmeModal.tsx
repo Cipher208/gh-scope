@@ -81,7 +81,7 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
                 type="button"
                 onClick={() => tr.toggle(md)}
                 disabled={tr.busy}
-                title={t.readme.machineNote}
+                title={t.readme.translateT}
                 className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${
                   tr.active ? 'border-mint/60 bg-mint/10 text-mint' : 'border-line text-mut hover:border-mint/60 hover:text-mint'
                 }`}
@@ -121,6 +121,15 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
               {t.readme.gitmcp} <IconExternal size={11} />
             </a>
             <a
+              href={`https://gitdiagram.com/${repo.full_name}`}
+              target="_blank"
+              rel="noreferrer"
+              title={t.readme.gitdiagramT}
+              className="inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 font-mono text-[11px] text-mut transition-colors hover:border-sky/60 hover:text-sky"
+            >
+              {t.readme.gitdiagram} <IconExternal size={11} />
+            </a>
+            <a
               href={repo.html_url}
               target="_blank"
               rel="noreferrer"
@@ -141,7 +150,7 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
 
         {tr.active && (
           <div className="border-b border-line px-4 py-1.5 font-mono text-[11px] text-mut/80">
-            {tr.failed ? t.readme.fail : t.readme.machineNote}
+            {tr.failed ? t.readme.fail(tr.failedChunks) : t.readme.machineNote(tr.via ?? 'mixed transports')}
           </div>
         )}
 
