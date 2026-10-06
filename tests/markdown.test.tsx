@@ -106,6 +106,19 @@ test('raw HTML in a README never reaches the output as a tag', () => {
   assert.ok(!/<iframe/i.test(html), 'no iframe tag');
 });
 
+test('a tag nested inside a tag does not survive as a tag', () => {
+  // `<scr<script>ipt>` is the classic shape for a stripper that removes one
+  // pattern and thereby assembles another. It does not break this one — the
+  // test locks the property in rather than reproducing a bug.
+  const html = render('<scr<script>ipt>alert(1)</scr</script>ipt>');
+  assert.ok(!/<script/i.test(html), `nested tag survived: ${html.slice(0, 200)}`);
+});
+
+test('a nested HTML comment does not survive as a comment', () => {
+  const html = render('before <!--<!-->--> after');
+  assert.ok(!/<!--/.test(html), `comment survived: ${html.slice(0, 200)}`);
+});
+
 test('a hostile README cannot break out of its own text node', () => {
   const html = render('"><img src=x onerror=alert(1)>');
   assert.ok(!/onerror/i.test(html), 'no event handler attribute');
