@@ -40,16 +40,32 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # Always runs. Whether or not this repository can publish a Pages site,
+      # "does the code build" is a question CI should answer on every push —
+      # so the build stays unconditional and only the publishing is gated.
       - name: Build
         run: npm run build
 
+      # GitHub Pages for a *private* repository needs Pro/Team/Enterprise. On
+      # the Free plan the Pages API answers 404 and configure-pages fails the
+      # whole run — a red X on every push to main that says "deploy broken"
+      # when the truth is "not available on this plan yet". Gating on
+      # visibility keeps the signal honest: while private, this job verifies
+      # the build and stops; once the repository is public, it deploys with no
+      # further edit. `enablement: true` is deliberately NOT used: it would
+      # try to switch Pages on by itself, and that is the owner's call.
       - uses: actions/configure-pages@v5
+        if: github.event.repository.visibility == 'public'
+        id: pages
+
       - uses: actions/upload-pages-artifact@v3
+        if: github.event.repository.visibility == 'public'
         with:
           path: dist
 
   deploy:
     needs: build
+    if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
