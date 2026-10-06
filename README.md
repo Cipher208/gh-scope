@@ -28,8 +28,18 @@ npm run typecheck
 
 Это статика: публикуется каталог `dist/`. Подходит любой статический хост.
 
-- **GitHub Pages** — сборка `npm run build -- --base=./`, публикация `dist/`
+- **GitHub Pages** — готовый workflow в `.github/workflows/pages.yml` собирает и публикует
+  `dist/` на каждый push в `main`. В настройках репозитория нужно один раз выбрать
+  **Settings → Pages → Source: GitHub Actions**.
 - **Vercel / Netlify / Cloudflare Pages** — build: `npm run build`, output: `dist`
+
+В `vite.config.js` стоит `base: "./"`, поэтому сборка работает и под подкаталогом
+(`user.github.io/gh-scope/`), куда Pages её и кладёт. Навигация хеш-роутинговая, так что
+прямые ссылки на разделы не дают 404 на статике.
+
+> GitHub Pages в **приватном** репозитории доступен только на платных планах
+> (Pro / Team / Enterprise). На Free приватный репозиторий Pages не получит —
+> в этом случае либо Vercel/Netlify/Cloudflare, либо репозиторий публикуется.
 
 ## Лимиты
 
