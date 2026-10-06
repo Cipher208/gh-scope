@@ -13,6 +13,13 @@
       content="gh-scope — universal GitHub search & explorer: profiles, orgs, repo duels, trending, releases and deep repo cards."
     />
     <title>gh-scope · universal GitHub search & explorer</title>
+    <!-- Relative, like every other asset: the bundle has to work under a
+         project subdirectory (github.io/gh-scope/) as well as at a root. -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!-- Paints the mobile browser chrome in the app's own dark, and only asks
+         for the dark value: the page can switch themes after load, but the
+         toolbar is decided before CSS runs. -->
+    <meta name="theme-color" content="#0c1420" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

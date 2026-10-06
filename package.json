@@ -1,6 +1,22 @@
 {
   "name": "gh-scope",
+  "version": "0.1.0",
   "private": true,
+  "description": "Universal GitHub search and explorer: profiles, orgs, repo duels, trending, releases and deep repo cards — a static SPA with no backend and no secrets.",
+  "license": "MIT",
+  "author": "Sart (https://github.com/Cipher208)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cipher208/gh-scope.git"
+  },
+  "keywords": [
+    "github",
+    "search",
+    "explorer",
+    "react",
+    "vite",
+    "tailwind"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

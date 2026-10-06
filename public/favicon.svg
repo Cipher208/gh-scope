@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="gh-scope">
+  <rect width="32" height="32" rx="7" fill="#0c1420" />
+  <!-- The lens: a GitHub explorer is a search box first. Drawn at a weight that
+       survives 16px, with no detail finer than the stroke itself. -->
+  <circle cx="14" cy="13.5" r="6.5" fill="#ffb454" fill-opacity="0.14" stroke="#ffb454" stroke-width="2.4" />
+  <!-- Handle, angled so the mark does not read as a plain circle at favicon size. -->
+  <line x1="18.6" y1="18.1" x2="24" y2="23.5" stroke="#ffb454" stroke-width="2.8" stroke-linecap="round" />
+  <!-- Prompt chevron inside the lens: this is a terminal tool, not a browser. -->
+  <path d="M12.1 11.4 L14.6 13.5 L12.1 15.6" fill="none" stroke="#0c1420" stroke-width="1.9"
+        stroke-linecap="round" stroke-linejoin="round" />
+</svg>
