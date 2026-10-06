@@ -22,6 +22,29 @@ export const en = {
       `GitHub API rate limit · resets in ~${mins} min${auth ? ' · authenticated' : ' · anonymous'}`,
     palette: 'Open command palette',
   },
+  settings: {
+    title: 'Settings',
+    close: 'Close',
+    stored: 'Both fields are stored in this browser only. Nothing is sent anywhere but the services you name.',
+    tokenTitle: 'GitHub token',
+    tokenNote:
+      'Without a token the API gives 60 requests/hour per IP and hides private repositories. A classic token with no scopes is enough to lift the limit; add repo scope only if you want private repos to show.',
+    tokenPlaceholder: 'ghp_… or github_pat_…',
+    tokenSave: 'Save token',
+    tokenClear: 'Remove',
+    tokenSet: 'A token is stored',
+    tokenUnset: 'No token — browsing anonymously',
+    translateTitle: 'Translation endpoint',
+    translateNote:
+      'Optional. The built-in transport calls a public Google endpoint that is not a documented API and can disappear without notice. Give your own LibreTranslate-compatible URL and it is tried first; the public one stays as a fallback.',
+    translateUrl: 'Endpoint URL',
+    translateUrlPlaceholder: 'https://libretranslate.example.com/translate',
+    translateKey: 'API key (optional)',
+    translateSave: 'Save endpoint',
+    translateClear: 'Remove',
+    translateUsing: 'Using your endpoint first, then the public one',
+    translatePublicOnly: 'No endpoint set — using the public transport',
+  },
   browse: {
     window: 'gh-scope — github explorer',
     fetching: (l: string) => `· fetching @${l}…`,
@@ -102,8 +125,11 @@ export const en = {
     translate: 'translate → ru',
     original: 'original',
     translating: (a: number, b: number) => `translating ${a}/${b}…`,
-    machineNote: 'machine translation · google · code & links untouched',
-    fail: 'translation failed — the endpoint is rate-limited, try again later',
+    machineNote: (via: string) => `machine translation · ${via} · code & links untouched`,
+    translateT:
+      'Translate the README on the fly. A section that fails to translate is reported instead of being dropped quietly.',
+    fail: (n: number) =>
+      `translation failed on ${n} ${n === 1 ? 'section' : 'sections'} — showing the original rather than a partial translation`,
   },
   search: {
     window: 'gh-scope — universal search',
@@ -349,6 +375,29 @@ export const ru: Dict = {
       `Лимит GitHub API · сброс через ~${mins} мин${auth ? ' · с токеном' : ' · анонимно'}`,
     palette: 'Открыть командную палитру',
   },
+  settings: {
+    title: 'Настройки',
+    close: 'Закрыть',
+    stored: 'Оба поля хранятся только в этом браузере. Наружу уходит ровно то, что нужно названным вами сервисам.',
+    tokenTitle: 'Токен GitHub',
+    tokenNote:
+      'Без токена API даёт 60 запросов в час на IP и скрывает приватные репозитории. Чтобы поднять лимит, хватит классического токена без единого scope; добавляйте scope repo только если хотите видеть приватные репо.',
+    tokenPlaceholder: 'ghp_… или github_pat_…',
+    tokenSave: 'Сохранить токен',
+    tokenClear: 'Убрать',
+    tokenSet: 'Токен сохранён',
+    tokenUnset: 'Токена нет — работаем анонимно',
+    translateTitle: 'Эндпоинт перевода',
+    translateNote:
+      'Необязательно. Встроенный транспорт зовёт публичный эндпоинт Google, который не является документированным API и может исчезнуть без предупреждения. Укажите свой URL, совместимый с LibreTranslate, — он пробуется первым, публичный остаётся запасным.',
+    translateUrl: 'URL эндпоинта',
+    translateUrlPlaceholder: 'https://libretranslate.example.com/translate',
+    translateKey: 'Ключ API (необязательно)',
+    translateSave: 'Сохранить эндпоинт',
+    translateClear: 'Убрать',
+    translateUsing: 'Первым идёт ваш эндпоинт, потом публичный',
+    translatePublicOnly: 'Эндпоинт не задан — работаем через публичный',
+  },
   browse: {
     window: 'gh-scope — обозреватель github',
     fetching: (l: string) => `· получаем @${l}…`,
@@ -429,8 +478,11 @@ export const ru: Dict = {
     translate: 'перевести → ru',
     original: 'оригинал',
     translating: (a: number, b: number) => `перевод ${a}/${b}…`,
-    machineNote: 'машинный перевод · google · код и ссылки не трогаем',
-    fail: 'перевод не удался — эндпоинт под лимитом, попробуйте позже',
+    machineNote: (via: string) => `машинный перевод · ${via} · код и ссылки не трогаем`,
+    translateT:
+      'Перевести README на месте. Фрагмент, который не перевёлся, будет назван вслух, а не тихо выброшен.',
+    fail: (n: number) =>
+      `перевод сорвался на ${n} фрагм. — показываем оригинал, а не обрезанный перевод`,
   },
   search: {
     window: 'gh-scope — универсальный поиск',

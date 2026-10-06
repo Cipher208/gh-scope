@@ -81,7 +81,7 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
                 type="button"
                 onClick={() => tr.toggle(md)}
                 disabled={tr.busy}
-                title={t.readme.machineNote}
+                title={t.readme.translateT}
                 className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${
                   tr.active ? 'border-mint/60 bg-mint/10 text-mint' : 'border-line text-mut hover:border-mint/60 hover:text-mint'
                 }`}
@@ -150,7 +150,7 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
 
         {tr.active && (
           <div className="border-b border-line px-4 py-1.5 font-mono text-[11px] text-mut/80">
-            {tr.failed ? t.readme.fail : t.readme.machineNote}
+            {tr.failed ? t.readme.fail(tr.failedChunks) : t.readme.machineNote(tr.via ?? 'mixed transports')}
           </div>
         )}
 

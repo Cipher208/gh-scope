@@ -20,6 +20,7 @@ import { CollectionsView, CollectionPicker, type Collection } from './components
 import { WatchtowerView, type WatchEntry } from './components/WatchtowerView';
 import { DiscoverView } from './components/DiscoverView';
 import { OrgView } from './components/OrgView';
+import { SettingsModal } from './components/SettingsModal';
 import {
   IconAlert,
   IconAt,
@@ -31,6 +32,7 @@ import {
   IconDownload,
   IconFlame,
   IconFolder,
+  IconKey,
   IconLink,
   IconMoon,
   IconPin,
@@ -49,6 +51,27 @@ const HISTORY_KEY = 'ghscope:history';
 const BOOKMARKS_KEY = 'ghscope:bookmarks';
 const COLLECTIONS_KEY = 'ghscope:collections';
 const WATCH_KEY = 'ghscope:watch';
+const TOKEN_KEY = 'ghscope:token';
+
+/* The API layer has taken a token from the start — `fetchMe`, `fetchMyRepos`
+ * and the `authenticated` flag on the rate meter all expect one. The UI just
+ * never asked for it, so every call site passed `null`. */
+function readToken(): string {
+  try {
+    return localStorage.getItem(TOKEN_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function writeToken(value: string) {
+  try {
+    if (value) localStorage.setItem(TOKEN_KEY, value);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* private mode */
+  }
+}
 
 type View = 'browse' | 'search' | 'orgs' | 'compare' | 'duel' | 'collections' | 'radar' | 'discover' | 'saved';
 
@@ -180,6 +203,14 @@ function Shell() {
       /* private mode */
     }
   }, [theme]);
+
+  /* github token — empty string means anonymous */
+  const [token, setToken] = useState<string>(readToken);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const updateToken = useCallback((value: string) => {
+    writeToken(value);
+    setToken(value);
+  }, []);
 
   /* bookmarks */
   const [bookmarks, setBookmarks] = useState<GHRepo[]>(readBookmarks);
@@ -362,7 +393,10 @@ function Shell() {
       setError(null);
       setPendingLogin(login);
       try {
-        const [user, repos] = await Promise.all([fetchUser(login, null), fetchRepos(login, null)]);
+        const [user, repos] = await Promise.all([
+          fetchUser(login, token || null),
+          fetchRepos(login, token || null),
+        ]);
         setProfile({ user, repos });
         setLoginInput(user.login);
         setQuery('');
@@ -379,7 +413,7 @@ function Shell() {
         setPendingLogin(null);
       }
     },
-    [busy, pushHistory],
+    [busy, pushHistory, token],
   );
 
   /* initial load: deep link #login or most recent */
@@ -395,9 +429,14 @@ function Shell() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setReadmeFor(null);
+        setSettingsOpen(false);
         return;
       }
       if (e.key === '/') {
+        // The settings modal owns the keyboard while it is open; focusing a
+        // search box behind an overlay would take the caret away from the
+        // field the visitor is actually typing in.
+        if (settingsOpen) return;
         const tag = (document.activeElement?.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
         const target =
@@ -411,7 +450,7 @@ function Shell() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [settingsOpen]);
 
   const openOwner = useCallback(
     (login: string) => {
@@ -551,6 +590,19 @@ function Shell() {
             </span>
             <button
               type="button"
+              onClick={() => setSettingsOpen(true)}
+              aria-label={t.settings.title}
+              title={t.settings.title}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300 hover:-translate-y-px ${
+                token
+                  ? 'border-mint/50 text-mint'
+                  : 'border-line text-mut hover:border-mint/60 hover:text-mint'
+              }`}
+            >
+              <IconKey size={15} />
+            </button>
+            <button
+              type="button"
               onClick={() => setTheme((th) => (th === 'dark' ? 'light' : 'dark'))}
               aria-label={theme === 'dark' ? t.chrome.toLight : t.chrome.toDark}
               title={theme === 'dark' ? t.chrome.toLight : t.chrome.toDark}
@@ -565,7 +617,7 @@ function Shell() {
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6">
         {view === 'search' && (
           <SearchView
-            token={null}
+            token={token || null}
             onOpenDetail={(full) => {
               window.open(`https://github.com/${full}`, '_blank', 'noreferrer');
             }}
@@ -588,7 +640,7 @@ function Shell() {
 
         {view === 'orgs' && (
           <OrgView
-            token={null}
+            token={token || null}
             onOpenDetail={(full) => window.open(`https://github.com/${full}`, '_blank', 'noreferrer')}
             onOpenOwner={openOwner}
             bookmarkedIds={bookmarkedIds}
@@ -1093,7 +1145,7 @@ function Shell() {
         </div>
       </footer>
 
-      {readmeFor && <ReadmeModal repo={readmeFor} token={null} onClose={() => setReadmeFor(null)} />}
+      {readmeFor && <ReadmeModal repo={readmeFor} token={token || null} onClose={() => setReadmeFor(null)} />}
 
       {pickFor && (
         <CollectionPicker
@@ -1105,6 +1157,14 @@ function Shell() {
             setPickFor(null);
           }}
           onCreateAndAdd={(name) => createAndAdd(name, pickFor)}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsModal
+          token={token}
+          onTokenChange={updateToken}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
     </div>
