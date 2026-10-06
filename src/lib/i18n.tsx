@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export const en = {
   nav: {
@@ -14,6 +14,7 @@ export const en = {
   },
   chrome: {
     publicApi: 'public api',
+    authedApi: 'token set',
     checking: 'checking…',
     toLight: 'Switch to light theme',
     toDark: 'Switch to dark theme',
@@ -367,6 +368,7 @@ export const ru: Dict = {
   },
   chrome: {
     publicApi: 'публичный api',
+    authedApi: 'с токеном',
     checking: 'проверка…',
     toLight: 'Включить светлую тему',
     toDark: 'Включить тёмную тему',
@@ -732,6 +734,15 @@ export function LangProvider({ children }: { children: ReactNode }) {
     }
     document.documentElement.lang = l;
   }, []);
+
+  // `setLang` writes the attribute when the visitor switches, but the persisted
+  // locale was never applied on load: a reload with `ghscope:lang = ru` left
+  // <html lang="en"> while the page rendered Russian, so a screen reader read
+  // Russian with English phonetics. index.html cannot know the stored value,
+  // which is why this belongs here and not there.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const value = useMemo(() => ({ lang, setLang, t: lang === 'ru' ? ru : en }), [lang, setLang]);
 
