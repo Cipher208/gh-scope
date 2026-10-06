@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest something gh-scope should do
+title: "[Feature] "
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The most valuable feature request describes an **annoyance**, not an
+        implementation. "I cannot keep a shortlist across machines" is something
+        that can be solved in several ways. "Add a sync button" has already
+        chosen one of them, possibly the wrong one.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do, and what gets in the way
+      description: Describe the task, not the solution.
+      placeholder: I want to find repositories that are actively maintained in a niche topic, but sorting by "recently updated" buries the ones that actually release things.
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: How do you handle it today
+      description: A workaround tells us how painful the problem really is.
+      placeholder: I open each repo and check its releases by hand.
+    validations:
+      required: false
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea, if you have one (optional)
+      description: Skip this if you would rather leave the design open — that is a perfectly good answer.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Would you like to work on it?
+      options:
+        - label: I would like to open a pull request for this
+        - label: I can help test it
+        - label: I am only suggesting the idea
