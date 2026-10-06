@@ -153,6 +153,20 @@ the first number to 5000.
 - No runtime dependencies beyond React itself
 - No analytics, no cookies, no server
 
+## Tests
+
+```bash
+npm run typecheck
+npm test
+```
+
+`npm test` bundles everything under `tests/` with esbuild and runs it on Node's
+built-in test runner — no framework, because a suite that needs Vitest, Jest and
+a config file is a bigger surface than the app it guards. The tests concentrate
+on the README renderer, which consumes markdown written by strangers: they feed
+it `javascript:` links, HTML-entity-encoded schemes, nested `<scr<script>ipt>`
+and `data:text/html`, and assert that none of it becomes an executable URL.
+
 ## Contributing
 
 Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).

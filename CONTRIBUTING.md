@@ -32,22 +32,28 @@ npm run dev        # http://localhost:5173
 | `npm run dev` | Development server with hot reload |
 | `npm run build` | Production build into `dist/` |
 | `npm run typecheck` | `tsc --noEmit` — no output means clean |
+| `npm test` | Bundles `tests/` with esbuild and runs it under `node --test` |
 
 ### Before you open a pull request
 
-Run both, and make sure they pass:
+Run all three, and make sure they pass:
 
 ```bash
 npm run typecheck
+npm test
 npm run build
 ```
 
-There is **no automated test suite yet** — this is a stated gap, not an
-oversight you need to work around. Verification is therefore: the typecheck,
-the build, and actually clicking through the thing in a browser. If your change
-touches rendering, please check it at a narrow width (320–390px) as well as a
-wide one, and in both the light and dark theme. A pull request that adds tests
-would be very welcome.
+The suite is small and covers what is dangerous rather than what is easy: the
+README renderer consumes text written by strangers, and the tests there attack
+it with hostile markdown. If you change `src/lib/markdown.tsx`, expect those
+tests to be the first thing that reacts, and please add the case you found.
+
+Verification beyond that is still human: the typecheck, the build, and actually
+clicking through the thing in a browser. If your change touches rendering,
+check it at a narrow width (320–390px) as well as a wide one, and in both the
+light and dark theme. A pull request that widens the test coverage — the
+GitHub API layer in `src/lib/github.ts` has none — would be very welcome.
 
 ### What CI checks
 
@@ -84,6 +90,7 @@ src/
     markdown.tsx       README renderer (React elements, never raw HTML)
     i18n.tsx           EN and RU strings
   index.css            Tailwind entry and theme tokens
+tests/                 bundled and run by scripts/run-tests.mjs
 public/                served as-is (favicon)
 ```
 
@@ -93,7 +100,14 @@ Two rules worth knowing before you touch things:
    requests go through the single `API` constant in `github.ts`.
 2. **Never render untrusted text as HTML.** READMEs come from arbitrary
    repositories. The renderer builds React elements, and there is no
-   `dangerouslySetInnerHTML` in the codebase. Please keep it that way.
+   `dangerouslySetInnerHTML` in the codebase.
+
+And one that is easy to miss, because React does not warn about it: **escape
+hatches do not escape.** React will happily render `<a href="javascript:…">`
+from a README, and clicking it runs in this origin, where the reader's token
+lives. Every URL that reaches an `href` or `src` goes through `safeHref` /
+`safeSrc` in `markdown.tsx` — if you add a new place that renders a link or an
+image, route it through them too.
 
 ## Reporting security issues
 

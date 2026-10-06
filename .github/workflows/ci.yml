@@ -35,6 +35,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # The security tests run before the build: they are fast, and a renderer
+      # that hands a `javascript:` URL to the browser is a worse outcome than a
+      # bundle that fails to compile.
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
