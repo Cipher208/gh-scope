@@ -194,7 +194,7 @@ export function WatchtowerView({
             const rel = releases[w.fullName];
             return (
               <Reveal key={w.fullName} delay={(i % 4) * 60}>
-                <article className="card-lift group relative flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-line bg-panel/70 p-4 pl-5 hover:border-mint/40">
+                <article className="card-hover group relative flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-line bg-panel/70 p-4 pl-5 hover:border-mint/40">
                   <span
                     aria-hidden="true"
                     className="absolute bottom-3 left-0 top-3 w-[3px] rounded-full"
