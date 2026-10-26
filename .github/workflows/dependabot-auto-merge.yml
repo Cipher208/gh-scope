@@ -1,0 +1,36 @@
+name: Dependabot auto-merge
+
+# `allow_auto_merge` in the repository settings only makes auto-merge possible;
+# every pull request still has to ask for it. This job asks on Dependabot's
+# behalf — and only for patch and minor updates, because a major bump is a
+# migration rather than a version bump. (npm majors are already excluded in
+# dependabot.yml; this covers the actions group.)
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  # Merging needs write on contents, and asking for auto-merge needs write on
+  # pull requests. Nothing else: this job never checks out or runs PR code.
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - id: meta
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The required `verify` check on main is what actually holds the merge;
+      # this step only arms it, so a red PR waits instead of landing.
+      - name: Enable auto-merge for patch and minor updates
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
