@@ -389,7 +389,10 @@ function Shell() {
         setShowForks(true);
         pushHistory(user.login);
         activeLogin.current = user.login;
-        window.location.hash = user.login;
+        /* Only write the hash when it points somewhere else. Rewriting #/login
+         * into #login for the same person would push a duplicate history entry
+         * and make the Back button look broken. */
+        if (loginFromHash(window.location.hash) !== user.login) window.location.hash = user.login;
       } catch (e) {
         setProfile(null);
         setError(e instanceof GHError ? e : new GHError(0, 'Network error — check your connection and try again.'));
@@ -408,11 +411,18 @@ function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* a link opened in an already-running tab only fires hashchange — follow it */
+  /* a link opened in an already-running tab only fires hashchange — follow it.
+   * An empty hash is the landing page: Back must take the profile off screen,
+   * otherwise the address bar and the screen disagree. */
   useEffect(
     () =>
       watchHash(window, (login) => {
-        if (!login || login === activeLogin.current) return;
+        if (!login) {
+          activeLogin.current = null;
+          setProfile(null);
+          return;
+        }
+        if (login === activeLogin.current) return;
         void load(login);
       }),
     [load],
