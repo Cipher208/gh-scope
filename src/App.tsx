@@ -13,6 +13,18 @@ import {
 import { LangProvider, useLang, useLocale, useT } from './lib/i18n';
 import { loginFromHash, watchHash } from './lib/hash';
 import { readToken, writeToken } from './lib/token';
+import {
+  BOOKMARKS_LIMIT,
+  createCollection as createCollectionIn,
+  createCollectionWith,
+  deleteCollection as deleteCollectionIn,
+  readList,
+  removeFromCollection,
+  toggleBookmark as toggleBookmarkIn,
+  toggleInCollection as toggleInCollectionIn,
+  toggleWatch as toggleWatchIn,
+  writeList,
+} from './lib/saved';
 import { RepoCard } from './components/RepoCard';
 import { ReadmeModal } from './components/ReadmeModal';
 import { SearchView } from './components/SearchView';
@@ -63,25 +75,15 @@ interface Profile {
 }
 
 function readHistory(): string[] {
-  try {
-    const raw = localStorage.getItem(HISTORY_KEY);
-    const arr = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string').slice(0, 6) : [];
-  } catch {
-    return [];
-  }
+  return readList<string>(localStorage, HISTORY_KEY, (x) => typeof x === 'string').slice(0, 6);
 }
 
 function readBookmarks(): GHRepo[] {
-  try {
-    const raw = localStorage.getItem(BOOKMARKS_KEY);
-    const arr = raw ? (JSON.parse(raw) as unknown) : [];
-    return Array.isArray(arr)
-      ? arr.filter((x): x is GHRepo => typeof x === 'object' && x !== null && typeof (x as GHRepo).id === 'number').slice(0, 300)
-      : [];
-  } catch {
-    return [];
-  }
+  return readList<GHRepo>(
+    localStorage,
+    BOOKMARKS_KEY,
+    (x) => typeof x === 'object' && x !== null && typeof (x as GHRepo).id === 'number',
+  ).slice(0, BOOKMARKS_LIMIT);
 }
 
 /** Terminal-style crash screen — catches any runtime error honestly. */
@@ -198,91 +200,43 @@ function Shell() {
   const [bookmarks, setBookmarks] = useState<GHRepo[]>(readBookmarks);
   const persistBookmarks = useCallback((next: GHRepo[]) => {
     setBookmarks(next);
-    try {
-      localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(next));
-    } catch {
-      /* private mode */
-    }
+    writeList(localStorage, BOOKMARKS_KEY, next);
   }, []);
-  const toggleBookmark = useCallback(
-    (repo: GHRepo) => {
-      setBookmarks((prev) => {
-        const exists = prev.some((r) => r.id === repo.id);
-        const next = exists ? prev.filter((r) => r.id !== repo.id) : [repo, ...prev].slice(0, 300);
-        try {
-          localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(next));
-        } catch {
-          /* private mode */
-        }
-        return next;
-      });
-    },
-    [],
-  );
+  const toggleBookmark = useCallback((repo: GHRepo) => {
+    setBookmarks((prev) => {
+      const next = toggleBookmarkIn(prev, repo);
+      writeList(localStorage, BOOKMARKS_KEY, next);
+      return next;
+    });
+  }, []);
   const bookmarkedIds = useMemo(() => new Set(bookmarks.map((r) => r.id)), [bookmarks]);
 
   /* collections */
-  const [collections, setCollections] = useState<Collection[]>(() => {
-    try {
-      const raw = localStorage.getItem(COLLECTIONS_KEY);
-      const arr = raw ? (JSON.parse(raw) as unknown) : [];
-      return Array.isArray(arr) ? (arr as Collection[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [collections, setCollections] = useState<Collection[]>(() => readList<Collection>(localStorage, COLLECTIONS_KEY));
   const persistCollections = useCallback((next: Collection[]) => {
     setCollections(next);
-    try {
-      localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(next));
-    } catch {
-      /* private mode */
-    }
+    writeList(localStorage, COLLECTIONS_KEY, next);
   }, []);
   const createCollection = useCallback(
-    (name: string) => {
-      const now = new Date().toISOString();
-      persistCollections([{ id: `c${Date.now()}`, name, items: [], createdAt: now }, ...collections]);
-    },
+    (name: string) => persistCollections(createCollectionIn(collections, name, new Date().toISOString())),
     [collections, persistCollections],
   );
   const deleteCollection = useCallback(
-    (id: string) => persistCollections(collections.filter((c) => c.id !== id)),
+    (id: string) => persistCollections(deleteCollectionIn(collections, id)),
     [collections, persistCollections],
   );
   const toggleInCollection = useCallback(
-    (colId: string, repo: GHRepo) => {
-      const now = new Date().toISOString();
-      persistCollections(
-        collections.map((c) => {
-          if (c.id !== colId) return c;
-          const exists = c.items.some((it) => it.fullName === repo.full_name);
-          return {
-            ...c,
-            items: exists
-              ? c.items.filter((it) => it.fullName !== repo.full_name)
-              : [{ fullName: repo.full_name, repo, addedAt: now }, ...c.items],
-          };
-        }),
-      );
-    },
+    (colId: string, repo: GHRepo) =>
+      persistCollections(toggleInCollectionIn(collections, colId, repo, new Date().toISOString())),
     [collections, persistCollections],
   );
   const removeCollectionItem = useCallback(
-    (id: string, fullName: string) => {
-      persistCollections(
-        collections.map((c) => (c.id === id ? { ...c, items: c.items.filter((it) => it.fullName !== fullName) } : c)),
-      );
-    },
+    (id: string, fullName: string) => persistCollections(removeFromCollection(collections, id, fullName)),
     [collections, persistCollections],
   );
   const createAndAdd = useCallback(
     (name: string, repo: GHRepo) => {
-      const now = new Date().toISOString();
-      persistCollections([
-        { id: `c${Date.now()}`, name, items: [{ fullName: repo.full_name, repo, addedAt: now }], createdAt: now },
-        ...collections,
-      ]);
+      persistCollections(createCollectionWith(collections, name, repo, new Date().toISOString()));
       setPickFor(null);
     },
     [collections, persistCollections],
@@ -290,49 +244,13 @@ function Shell() {
   const [pickFor, setPickFor] = useState<GHRepo | null>(null);
 
   /* watchtower */
-  const [watchEntries, setWatchEntries] = useState<WatchEntry[]>(() => {
-    try {
-      const raw = localStorage.getItem(WATCH_KEY);
-      const arr = raw ? (JSON.parse(raw) as unknown) : [];
-      return Array.isArray(arr) ? (arr as WatchEntry[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [watchEntries, setWatchEntries] = useState<WatchEntry[]>(() => readList<WatchEntry>(localStorage, WATCH_KEY));
   const persistWatch = useCallback((next: WatchEntry[]) => {
     setWatchEntries(next);
-    try {
-      localStorage.setItem(WATCH_KEY, JSON.stringify(next));
-    } catch {
-      /* private mode */
-    }
+    writeList(localStorage, WATCH_KEY, next);
   }, []);
   const toggleWatch = useCallback(
-    (repo: GHRepo) => {
-      const exists = watchEntries.some((w) => w.fullName === repo.full_name);
-      if (exists) {
-        persistWatch(watchEntries.filter((w) => w.fullName !== repo.full_name));
-        return;
-      }
-      const now = new Date().toISOString();
-      const entry: WatchEntry = {
-        fullName: repo.full_name,
-        name: repo.name,
-        owner: repo.full_name.split('/')[0],
-        language: repo.language,
-        htmlUrl: repo.html_url,
-        addedAt: now,
-        capturedAt: now,
-        stars: repo.stargazers_count,
-        forks: repo.forks_count,
-        pushedAt: repo.pushed_at,
-        dStars: null,
-        dForks: null,
-        newPush: false,
-        history: [{ t: now, stars: repo.stargazers_count }],
-      };
-      persistWatch([entry, ...watchEntries]);
-    },
+    (repo: GHRepo) => persistWatch(toggleWatchIn(watchEntries, repo, new Date().toISOString())),
     [watchEntries, persistWatch],
   );
   const watchedFulls = useMemo(() => new Set(watchEntries.map((w) => w.fullName)), [watchEntries]);
