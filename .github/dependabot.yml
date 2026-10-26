@@ -25,8 +25,9 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
-  # The workflows pin actions by major tag; this keeps those tags current and
-  # surfaces a deprecation before GitHub turns it into a red build.
+  # The workflows pin actions to commit SHAs; Dependabot moves the SHA (and the
+  # `# vN` comment beside it) and surfaces a deprecation before it becomes a red
+  # build.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

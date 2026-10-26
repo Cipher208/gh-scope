@@ -46,6 +46,13 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # CI and this workflow both trigger on a push to main and run in parallel,
+      # so a red CI cannot stop a deploy that started at the same second. Running
+      # the tests here is what makes them a gate for what actually gets published,
+      # rather than a signal that arrives after the artifact is live.
+      - name: Test
+        run: npm test
+
       # Always runs. Whether or not this repository can publish a Pages site,
       # "does the code build" is a question CI should answer on every push —
       # so the build stays unconditional and only the publishing is gated.
