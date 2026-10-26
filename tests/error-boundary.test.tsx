@@ -74,7 +74,7 @@ test('reboot asks the browser to reload', () => {
     throw new Error('boom');
   }
 
-  const container = mount(createElement(Explodes));
+  mount(createElement(Explodes));
   const reboot = [...win.document.querySelectorAll('button')].find((b) =>
     (b.textContent ?? '').includes('reboot'),
   );

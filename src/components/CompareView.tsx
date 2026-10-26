@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import type { GHRepo, GHUser } from '../lib/github';
 import { GHError, accountYears, fetchRepos, fetchUser, langColor } from '../lib/github';
-import { Reveal, useCountUp } from '../lib/hooks';
+import { Reveal } from '../lib/hooks';
 import { useT } from '../lib/i18n';
 import { IconAlert, IconScale } from './Icons';
 

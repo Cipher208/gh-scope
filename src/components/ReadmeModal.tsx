@@ -22,9 +22,6 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
 
   useEffect(() => {
     let alive = true;
-    setMd(null);
-    setError(null);
-    tr.reset();
     fetchReadme(repo.full_name, branch, token)
       .then((text: string) => {
         if (alive) setMd(text);
@@ -35,7 +32,6 @@ export function ReadmeModal({ repo, token, onClose, onOpenDetail }: Props) {
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repo.full_name, branch, token]);
 
   useEffect(() => {

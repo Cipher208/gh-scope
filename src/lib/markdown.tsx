@@ -44,6 +44,8 @@ function decodeEntities(s: string): string {
 /* HTML normalization (strips layout wrappers, keeps content)          */
 /* ------------------------------------------------------------------ */
 
+/* eslint-disable no-control-regex -- these regexes exist to strip C0/C1 control characters */
+
 /**
  * Remove every match, and then every match that only appears because an
  * earlier one was removed — repeatedly, until the string stops changing.

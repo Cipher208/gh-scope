@@ -30,6 +30,8 @@ function hashKey(s: string): string {
   return `${s.length}:${h}`;
 }
 
+/* eslint-disable no-control-regex -- the cache key sanitiser strips control characters */
+
 /**
  * Split markdown into translatable chunks, keeping fenced code blocks and
  * inline code / links as protected placeholders.

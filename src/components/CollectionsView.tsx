@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { GHRepo } from '../lib/github';
-import { downloadFile, langColor, relTime } from '../lib/github';
+import { downloadFile, langColor } from '../lib/github';
 import { Reveal } from '../lib/hooks';
 import { useT } from '../lib/i18n';
 import { IconDownload, IconFolder, IconTrash, IconX } from './Icons';

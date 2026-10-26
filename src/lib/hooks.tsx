@@ -9,6 +9,8 @@ export function useScramble(text: string): string {
 
   useEffect(() => {
     if (prefersReducedMotion() || !text) {
+      // Reduced motion: the animation's terminal state, written once.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOut(text);
       return;
     }
@@ -43,6 +45,8 @@ export function useCountUp(target: number): number {
 
   useEffect(() => {
     if (prefersReducedMotion()) {
+      // Reduced motion: jump to the final value instead of animating to it.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValue(target);
       return;
     }

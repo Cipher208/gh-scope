@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import type { GHRelease, GHRepoDetail } from '../lib/github';
+import type { GHRelease } from '../lib/github';
 import { GHError, compactNum, fetchLatestRelease, fetchRepoDetail, langColor, relTime } from '../lib/github';
 import { Reveal } from '../lib/hooks';
 import { useT } from '../lib/i18n';
@@ -20,11 +20,6 @@ export interface WatchEntry {
   dForks: number | null;
   newPush: boolean;
   history: Array<{ t: string; stars: number }>;
-}
-
-interface LiveRelease {
-  fullName: string;
-  release: GHRelease | null;
 }
 
 export function WatchtowerView({

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GHRepo } from '../lib/github';
-import { GHError, compactNum, langColor, searchRepos } from '../lib/github';
+import { GHError, compactNum, searchRepos } from '../lib/github';
 import { Reveal } from '../lib/hooks';
 import { useT } from '../lib/i18n';
 import { RepoCard } from './RepoCard';
@@ -40,7 +40,7 @@ export function DiscoverView({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<GHError | null>(null);
   const [items, setItems] = useState<GHRepo[] | null>(null);
-  const pageRef = useRef(1);
+  const [page, setPage] = useState(1);
   const debRef = useRef<number | null>(null);
   const firstRun = useRef(true);
 
@@ -57,7 +57,7 @@ export function DiscoverView({
     setError(null);
     try {
       const res = await searchRepos(query, mode === 'rising' ? 'stars' : '', 'desc', page, PER_PAGE, null);
-      pageRef.current = page;
+      setPage(page);
       setItems((prev) => (append && prev ? [...prev, ...res.items] : res.items));
     } catch (err) {
       setError(err instanceof GHError ? err : new GHError(0, t.err.net));
@@ -208,10 +208,10 @@ export function DiscoverView({
               </div>
             ))}
           </div>
-          {items && items.length >= PER_PAGE * pageRef.current && (
+          {items && items.length >= PER_PAGE * page && (
             <button
               type="button"
-              onClick={() => void scan(pageRef.current + 1, true)}
+              onClick={() => void scan(page + 1, true)}
               disabled={busy}
               className="rounded-lg border border-line py-2.5 font-mono text-xs text-mut transition-colors hover:border-amber/60 hover:text-amber disabled:opacity-50"
             >

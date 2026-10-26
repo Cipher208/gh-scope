@@ -9,7 +9,7 @@
     if (localStorage.getItem('ghscope:theme') === 'light') {
       document.documentElement.dataset.theme = 'light';
     }
-  } catch (e) {
+  } catch {
     /* storage disabled: the default dark theme applies */
   }
 })();

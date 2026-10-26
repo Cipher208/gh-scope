@@ -133,8 +133,8 @@ function mount(): Handle {
 
 function withFetch(impl: (url: string) => Response | Promise<Response>): void {
   const real = globalThis.fetch;
-  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) =>
-    impl(String(input))) as typeof fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL) =>
+    impl(String(input))) as unknown as typeof fetch;
   cleanup.push(() => {
     globalThis.fetch = real;
   });

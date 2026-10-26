@@ -42,6 +42,11 @@ jobs:
       - name: Install
         run: npm ci --ignore-scripts
 
+      # Lint before typecheck: it is the fastest gate and catches the things tsc
+      # deliberately does not — a hook dependency that lies, a variable nobody uses.
+      - name: Lint
+        run: npm run lint
+
       - name: Typecheck
         run: npm run typecheck
 

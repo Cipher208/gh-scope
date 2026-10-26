@@ -106,6 +106,9 @@ function RateMeter({ rate }: { rate: RateInfo }) {
   }, []);
   const pct = rate.limit > 0 ? rate.remaining / rate.limit : 0;
   const color = pct > 0.25 ? 'var(--color-mint)' : pct > 0.08 ? 'var(--color-amber)' : 'var(--color-coral)';
+  /* The countdown is a human-readable "resets in ~N min", so it has to be
+   * computed from the clock at paint time — the 30s tick exists to repaint it. */
+  // eslint-disable-next-line react-hooks/purity
   const mins = Math.max(0, Math.round((rate.reset * 1000 - Date.now()) / 60000));
   return (
     <div className="hidden items-center gap-1.5 lg:flex" title={t.chrome.rateTitle(mins, rate.authenticated)}>
@@ -190,6 +193,7 @@ function Shell() {
     (id: string, fullName: string) => persistCollections(removeFromCollection(collections, id, fullName)),
     [collections, persistCollections],
   );
+  const [pickFor, setPickFor] = useState<GHRepo | null>(null);
   const createAndAdd = useCallback(
     (name: string, repo: GHRepo) => {
       persistCollections(createCollectionWith(collections, name, repo, new Date().toISOString()));
@@ -197,7 +201,6 @@ function Shell() {
     },
     [collections, persistCollections],
   );
-  const [pickFor, setPickFor] = useState<GHRepo | null>(null);
 
   /* watchtower */
   const [watchEntries, setWatchEntries] = useState<WatchEntry[]>(() => readList<WatchEntry>(localStorage, WATCH_KEY));
@@ -281,7 +284,13 @@ function Shell() {
   /* initial load: deep link #login or most recent */
   useEffect(() => {
     const initial = loginFromHash(window.location.hash) || readHistory()[0];
+    // The first load is exactly the "subscribe to an external system" case: the
+    // URL is read once on mount, and the busy flag it sets is the intended
+    // feedback, not a cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (initial) void load(initial);
+    // `load` changes with `busy`; re-running this effect on that would reload the
+    // profile on every keystroke-driven busy flip. The URL is read once, on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1060,7 +1069,14 @@ function Shell() {
         </div>
       </footer>
 
-      {readmeFor && <ReadmeModal repo={readmeFor} token={token || null} onClose={() => setReadmeFor(null)} />}
+      {readmeFor && (
+        <ReadmeModal
+          key={readmeFor.full_name}
+          repo={readmeFor}
+          token={token || null}
+          onClose={() => setReadmeFor(null)}
+        />
+      )}
 
       {pickFor && (
         <CollectionPicker
