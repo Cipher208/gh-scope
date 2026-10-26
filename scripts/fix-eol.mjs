@@ -28,7 +28,9 @@ for (const line of result.stdout.split('\n')) {
   const match = /^i\/(\S+)\s+w\/(\S+)\s+attr\/(.*)$/.exec(meta);
   if (!match) continue;
   const [, index, worktree, attr] = match;
-  if (attr.trim() === '-text') continue; // binary
+  // Binary files mark themselves in the i/w columns, not in attr; empty files
+  // report `none`.
+  if (index === '-text' || worktree === '-text' || index === 'none' || attr.trim() === '-text') continue;
   if (index !== 'lf' || worktree !== 'lf') targets.push({ file, index, worktree });
 }
 

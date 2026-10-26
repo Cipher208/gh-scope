@@ -33,7 +33,9 @@ for (const line of result.stdout.split('\n')) {
   const match = /^i\/(\S+)\s+w\/(\S+)\s+attr\/(.*)$/.exec(meta);
   if (!match) continue;
   const [, index, worktree, attr] = match;
-  if (attr.trim() === '-text') continue; // binary: not our business
+  // Binary files carry the marker in the i/w columns with an empty attr column;
+  // empty files report `none`. Neither has line endings to police.
+  if (index === '-text' || worktree === '-text' || index === 'none' || attr.trim() === '-text') continue;
   checked += 1;
   if (index !== 'lf') problems.push(`${file}: stored in the index as ${index}`);
   else if (worktree !== 'lf') problems.push(`${file}: checked out as ${worktree}`);
