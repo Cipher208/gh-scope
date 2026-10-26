@@ -26,8 +26,19 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # The required `verify` check on main is what actually holds the merge;
-      # this step only arms it, so a red PR waits instead of landing.
+      # The required `verify` check on main is strict: a branch that fell behind
+      # main cannot merge. Dependabot only rebases on conflict, so a green PR
+      # can sit in `BEHIND` forever. Updating it here is idempotent — the second
+      # run finds nothing to do — and the event it fires ends after that.
+      - name: Bring the branch up to date with main
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr update-branch "$PR_URL" || true
+
+      # The `verify` check is what actually holds the merge; this only arms it,
+      # so a red PR waits instead of landing.
       - name: Enable auto-merge for patch and minor updates
         if: steps.meta.outputs.update-type != 'version-update:semver-major'
         env:
