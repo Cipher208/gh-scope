@@ -181,8 +181,8 @@ the first number to 5000.
 ```bash
 npm run lint        # ESLint: hooks, dead code, the rules tsc does not check
 npm run typecheck   # tsc --noEmit
-npm test            # 98 tests: bundles + node:test, no framework
-npm run coverage    # the same suite, reported over src/ (~91% statements)
+npm test            # 126 tests: bundles + node:test, no framework
+npm run coverage    # the same suite, reported over src/ (~96% statements)
 npm run e2e         # one real Chromium run against dist/
 ```
 

@@ -28,6 +28,7 @@ export interface AppHandle {
   hashTo: (hash: string) => Promise<void>;
   /** Submit the form the field belongs to, the way Enter would. */
   submit: (label: string) => void;
+  select: (label: string, value: string) => void;
 }
 
 let cleanup: Array<() => void> = [];
@@ -37,11 +38,12 @@ export const settle = () =>
     await new Promise((r) => setTimeout(r, 25));
   });
 
-export function mountApp(): AppHandle {
+export function mountApp(seed?: () => void): AppHandle {
   win.localStorage.clear();
   win.sessionStorage.clear();
   win.location.hash = '';
   win.document.body.innerHTML = '';
+  seed?.();
 
   const container = win.document.createElement('div');
   win.document.body.appendChild(container);
@@ -82,6 +84,18 @@ export function mountApp(): AppHandle {
     });
   };
 
+  const select = (label: string, value: string) => {
+    const el = [...win.document.querySelectorAll('select')].find(
+      (s) => s.getAttribute('aria-label') === label,
+    );
+    assert.ok(el, `no select labelled "${label}"`);
+    const target = el as unknown as HTMLSelectElement;
+    act(() => {
+      target.value = value;
+      target.dispatchEvent(new win.Event('change', { bubbles: true }));
+    });
+  };
+
   const text = () => container.textContent ?? '';
   const count = (selector: string) => container.querySelectorAll(selector).length;
 
@@ -108,7 +122,7 @@ export function mountApp(): AppHandle {
     container.remove();
   });
 
-  return { root, click, button, field, type, text, count, hashTo, submit };
+  return { root, click, button, field, type, text, count, hashTo, submit, select };
 }
 
 export function withFetch(impl: (url: string) => Response | Promise<Response>): void {
