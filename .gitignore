@@ -6,7 +6,7 @@ dist/
 dist-ssr/
 
 # test bundles produced by scripts/run-tests.mjs
-.test-build/
+test-build/
 
 # logs
 logs/
@@ -34,3 +34,5 @@ pnpm-debug.log*
 !.env.example
 .next/
 build/
+coverage/
+artifacts/

@@ -19,7 +19,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const OUT = path.join(ROOT, '.test-build');
+const OUT = path.join(ROOT, 'test-build');
 
 const files = [];
 for await (const f of glob('tests/**/*.test.{ts,tsx}')) files.push(f);

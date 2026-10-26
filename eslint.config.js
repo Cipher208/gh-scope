@@ -12,7 +12,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
  * already says.
  */
 export default tseslint.config(
-  { ignores: ['dist/**', '.test-build/**', 'node_modules/**'] },
+  { ignores: ['dist/**', 'test-build/**', 'node_modules/**', 'coverage/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   // The plugin ships both shapes under similar names; `configs.flat` is the one
@@ -34,10 +34,18 @@ export default tseslint.config(
     },
   },
   {
-    // Node script: console and process are its whole environment.
-    files: ['scripts/**/*.mjs'],
+    // Node scripts: console and process are their whole environment. The e2e
+    // file also mixes in page-side callbacks for page.evaluate(), where
+    // `location` is the browser's.
+    files: ['scripts/**/*.mjs', 'e2e/**/*.mjs'],
     languageOptions: {
-      globals: { console: 'readonly', process: 'readonly' },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+        location: 'readonly',
+      },
     },
   },
   {

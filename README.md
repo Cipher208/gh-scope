@@ -179,16 +179,29 @@ the first number to 5000.
 ## Tests
 
 ```bash
-npm run typecheck
-npm test
+npm run lint        # ESLint: hooks, dead code, the rules tsc does not check
+npm run typecheck   # tsc --noEmit
+npm test            # 98 tests: bundles + node:test, no framework
+npm run coverage    # the same suite, reported over src/ (~91% statements)
+npm run e2e         # one real Chromium run against dist/
 ```
 
 `npm test` bundles everything under `tests/` with esbuild and runs it on Node's
 built-in test runner — no framework, because a suite that needs Vitest, Jest and
-a config file is a bigger surface than the app it guards. The tests concentrate
-on the README renderer, which consumes markdown written by strangers: they feed
-it `javascript:` links, HTML-entity-encoded schemes, nested `<scr<script>ipt>`
-and `data:text/html`, and assert that none of it becomes an executable URL.
+a config file is a bigger surface than the app it guards. happy-dom supplies the
+window for the tests that click; the API is stubbed at the URL level.
+
+Most of the coverage is behaviour rather than markup: the README sanitiser is
+fed `javascript:` links, entity-encoded schemes, nested `<scr<script>ipt>` and
+`data:text/html`; the shell is clicked through — tabs, theme, language, a login,
+a hash link opened in a running tab, the token landing in `sessionStorage`; and
+each network screen (search, compare, duel, organizations, watchtower, trending,
+README) is driven through its real form.
+
+`npm run e2e` is the only check that runs a browser. It builds on `dist/`,
+intercepts `api.github.com`, and asserts what only Chromium can answer: the page
+paints, the CSP allows what the app does, clicks work after layout, the console
+is quiet. CI runs it as a separate job and keeps the screenshot as an artifact.
 
 ## Contributing
 

@@ -67,3 +67,38 @@ jobs:
           test -f dist/index.html
           grep -q './assets/' dist/index.html
           ls dist/assets/*.js dist/assets/*.css
+
+  # happy-dom is a good approximation, not a browser. This job answers the
+  # questions only Chromium can: does it paint, does the CSP allow what the app
+  # does, does a click work after layout, is the console quiet. The API is
+  # intercepted inside e2e/smoke.mjs, so the run is deterministic.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Browser smoke
+        run: npm run e2e
+
+      - name: Keep the screenshot
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-smoke
+          path: artifacts/
+          if-no-files-found: warn
