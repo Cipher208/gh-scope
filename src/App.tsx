@@ -453,7 +453,7 @@ function Shell() {
     { key: 'duel', label: t.nav.duel, icon: <IconRepoCompare size={13} />, tone: 'bg-sky/15 text-sky' },
     { key: 'collections', label: t.nav.collections, icon: <IconFolder size={13} />, tone: 'bg-amber/15 text-amber', badge: collections.length },
     { key: 'radar', label: t.nav.watchtower, icon: <IconRadar size={13} />, tone: 'bg-mint/15 text-mint', badge: watchEntries.length },
-    { key: 'saved', label: 'saved', icon: <IconBookmark size={13} />, tone: 'bg-mint/15 text-mint', badge: bookmarks.length },
+    { key: 'saved', label: t.nav.saved, icon: <IconBookmark size={13} />, tone: 'bg-mint/15 text-mint', badge: bookmarks.length },
   ];
 
   return (
