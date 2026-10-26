@@ -86,8 +86,25 @@ jobs:
       - name: Install
         run: npm ci --ignore-scripts
 
-      - name: Install Chromium
+      # The browser download is the slowest step in this job, and it only
+      # changes when Playwright pins a new browser revision — that pin lives in
+      # playwright-core/browsers.json. Keying on the whole lockfile would throw
+      # the cache away on every unrelated dependency bump.
+      - name: Cache Chromium
+        id: chromium
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('node_modules/playwright-core/browsers.json') }}
+          restore-keys: playwright-${{ runner.os }}-
+
+      - name: Install Chromium and its libraries
+        if: steps.chromium.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+
+      - name: Install Chromium (cached)
+        if: steps.chromium.outputs.cache-hit == 'true'
+        run: npx playwright install chromium
 
       - name: Build
         run: npm run build
