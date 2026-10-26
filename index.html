@@ -23,6 +23,16 @@
       content="gh-scope — universal GitHub search & explorer: profiles, orgs, repo duels, trending, releases and deep repo cards."
     />
     <title>gh-scope · universal GitHub search & explorer</title>
+    <!-- One page, one address. The canonical is absolute on purpose: relative
+         canonicals are the ones crawlers mishandle under a project path. -->
+    <link rel="canonical" href="https://cipher208.github.io/gh-scope/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cipher208.github.io/gh-scope/" />
+    <meta property="og:title" content="gh-scope · universal GitHub search & explorer" />
+    <meta
+      property="og:description"
+      content="Profiles, orgs, repo duels, trending and releases — one static page, no backend, no secrets."
+    />
     <!-- Relative, like every other asset: the bundle has to work under a
          project subdirectory (github.io/gh-scope/) as well as at a root. -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />

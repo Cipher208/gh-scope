@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cipher208.github.io/gh-scope/sitemap.xml
