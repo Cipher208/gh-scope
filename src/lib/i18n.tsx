@@ -11,6 +11,7 @@ export const en = {
     watchtower: 'watchtower',
     radar: 'releases',
     discover: 'trending',
+    saved: 'saved',
   },
   chrome: {
     publicApi: 'public api',
@@ -365,6 +366,7 @@ export const ru: Dict = {
     watchtower: 'наблюдение',
     radar: 'релизы',
     discover: 'тренды',
+    saved: 'сохранённые',
   },
   chrome: {
     publicApi: 'публичный api',

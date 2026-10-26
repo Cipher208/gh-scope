@@ -23,6 +23,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Same reasoning as CI: a hung build must fail, not occupy a runner.
+    timeout-minutes: 15
     steps:
       # Pinned to commit SHAs, not tags: a moved tag would run different code
       # under the same name.
@@ -69,6 +71,7 @@ jobs:
     needs: build
     if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

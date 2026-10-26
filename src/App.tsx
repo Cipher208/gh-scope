@@ -554,6 +554,13 @@ function Shell() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6">
+        {/* One h1 per document, and it names what is actually on screen. It is
+            visually hidden because the design is terminal output: a second
+            visible title would break the composition, and a page with no h1
+            leaves a screen reader without a heading to jump to. */}
+        <h1 className="sr-only">
+          {profile ? `${profile.user.name || profile.user.login} — gh-scope` : `gh-scope — ${t.nav[view]}`}
+        </h1>
         {view === 'search' && (
           <SearchView
             token={token || null}

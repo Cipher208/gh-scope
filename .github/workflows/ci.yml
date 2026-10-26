@@ -18,6 +18,9 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # A hung install or test would hold this runner and the badge for hours;
+    # the whole suite takes under a minute, so ten is generous.
+    timeout-minutes: 10
     steps:
       # Pinned to commit SHAs, not tags: a tag is a pointer the action's owner
       # can move, and a moved tag would run different code with the same name.

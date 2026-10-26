@@ -36,6 +36,9 @@
     <!-- Relative, like every other asset: the bundle has to work under a
          project subdirectory (github.io/gh-scope/) as well as at a root. -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!-- The .ico is a fallback for readers and old browsers that ask for
+         /favicon.ico by name; modern ones take the SVG above. -->
+    <link rel="icon" sizes="32x32" href="./favicon.ico" />
     <!-- Paints the mobile browser chrome in the app's own dark, and only asks
          for the dark value: the page can switch themes after load, but the
          toolbar is decided before CSS runs. -->
