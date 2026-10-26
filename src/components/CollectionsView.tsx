@@ -92,7 +92,7 @@ export function CollectionsView({
         <div className="grid gap-4 lg:grid-cols-2">
           {collections.map((c, i) => (
             <Reveal key={c.id} delay={(i % 4) * 60}>
-              <section className="card-lift flex h-full flex-col gap-3 rounded-xl border border-line bg-panel/70 p-4 hover:border-amber/40">
+              <section className="card-hover flex h-full flex-col gap-3 rounded-xl border border-line bg-panel/70 p-4 hover:border-amber/40">
                 <div className="flex items-center gap-2">
                   <IconFolder size={16} className="shrink-0 text-amber" />
                   <h3 className="min-w-0 flex-1 truncate font-display text-base font-bold">{c.name}</h3>

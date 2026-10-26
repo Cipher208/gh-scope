@@ -79,7 +79,7 @@ export function RepoCard({
 
   return (
     <article
-      className="card-lift group relative flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-line bg-panel/70 p-4 pl-5 hover:border-mint/40 hover:bg-panel"
+      className="card-hover group relative flex h-full flex-col gap-3 overflow-hidden rounded-xl border border-line bg-panel/70 p-4 pl-5 hover:border-mint/40 hover:bg-panel"
       style={animate ? { animation: `card-in 0.5s cubic-bezier(0.22,0.61,0.36,1) both`, animationDelay: `${Math.min(index % 8, 8) * 55}ms` } : undefined}
     >
       <span

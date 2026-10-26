@@ -259,17 +259,14 @@ kbd {
   }
 }
 
-.card-lift {
+/* A card is a container with buttons inside it, not a link. Lifting it on
+ * hover promised a click that the card does not accept, so only the colour
+ * transition is left: enough to say "the pointer is here", not enough to say
+ * "this whole box is a control". */
+.card-hover {
   transition:
-    transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
     border-color 0.3s ease,
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.card-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card);
+    background-color 0.3s ease;
 }
 
 @keyframes card-in {
@@ -421,5 +418,52 @@ kbd {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ---------- print ---------- */
+
+@media print {
+  /* Paper has no dark mode. The same tokens, repainted for ink, so every
+   * component that already reads them prints legibly without a second theme. */
+  html[data-theme] {
+    --color-bg: #ffffff;
+    --color-panel: #ffffff;
+    --color-raise: #f2f2f2;
+    --color-line: #c9c9c9;
+    --color-ink: #111111;
+    --color-mut: #444444;
+    --color-amber: #8a4b00;
+    --color-mint: #0a6b45;
+    --color-coral: #8a1f2b;
+    --color-sky: #0b4f8a;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  /* A sticky bar belongs to a window: on paper it covers the first rows. */
+  header {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Cards are page-sized units; a split card reads as two broken ones. */
+  .card-hover {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
