@@ -38,8 +38,10 @@ jobs:
       # `npm ci` and not `npm install`: it installs exactly the lockfile and
       # fails if package.json and the lock have drifted, which is the check
       # that keeps a deploy from silently building different code than CI saw.
+      # `--ignore-scripts` for the same reason as in CI: a lockfile edit must
+      # not be able to run code on the runner that publishes the site.
       - name: Install
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Typecheck
         run: npm run typecheck
