@@ -34,8 +34,13 @@ jobs:
       # `npm ci`, not `npm install`: it installs exactly the lockfile and fails
       # when package.json and the lock have drifted, which is the check that
       # keeps CI from testing a dependency tree nobody else will ever get.
+      # `--ignore-scripts` closes the other half: a PR that edits the lockfile
+      # could otherwise run an install script on the runner. Nothing in this
+      # tree needs one — build and tests pass with scripts off — and the day a
+      # dependency does need one, this step fails loudly instead of silently
+      # executing it.
       - name: Install
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Typecheck
         run: npm run typecheck
