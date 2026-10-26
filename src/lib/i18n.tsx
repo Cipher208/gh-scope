@@ -22,7 +22,6 @@ export const en = {
     langNote: 'Switch interface language',
     rateTitle: (mins: number, auth: boolean) =>
       `GitHub API rate limit · resets in ~${mins} min${auth ? ' · authenticated' : ' · anonymous'}`,
-    palette: 'Open command palette',
   },
   settings: {
     title: 'Settings',
@@ -377,7 +376,6 @@ export const ru: Dict = {
     langNote: 'Переключить язык интерфейса',
     rateTitle: (mins: number, auth: boolean) =>
       `Лимит GitHub API · сброс через ~${mins} мин${auth ? ' · с токеном' : ' · анонимно'}`,
-    palette: 'Открыть командную палитру',
   },
   settings: {
     title: 'Настройки',

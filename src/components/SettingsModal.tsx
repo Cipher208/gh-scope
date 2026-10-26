@@ -93,6 +93,7 @@ export function SettingsModal({ token, onTokenChange, onClose }: Props) {
                 value={tokenDraft}
                 onChange={(e) => setTokenDraft(e.target.value)}
                 placeholder={t.settings.tokenPlaceholder}
+                aria-label={t.settings.tokenTitle}
                 spellCheck={false}
                 autoComplete="off"
                 className={`${field} min-w-0 flex-1`}
