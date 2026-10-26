@@ -22,6 +22,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "check:eol": "node scripts/check-eol.mjs",
+    "fix:eol": "node scripts/fix-eol.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/run-tests.mjs",
     "coverage": "node scripts/coverage.mjs",

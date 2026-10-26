@@ -39,6 +39,12 @@ jobs:
       # tree needs one — build and tests pass with scripts off — and the day a
       # dependency does need one, this step fails loudly instead of silently
       # executing it.
+      # Cheapest check there is, and it needs no dependencies: every text file
+      # must be LF in the index and in the working tree. Line-ending noise shows
+      # up as an equal number of insertions and deletions that change nothing.
+      - name: Line endings
+        run: node scripts/check-eol.mjs
+
       - name: Install
         run: npm ci --ignore-scripts
 

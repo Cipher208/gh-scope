@@ -1,0 +1,14 @@
+# Editors that ignore .gitattributes will still read this one.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.md]
+# A markdown line ending with two spaces is a hard break, not trailing space.
+trim_trailing_whitespace = false

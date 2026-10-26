@@ -1,0 +1,19 @@
+# Line endings are a fact of the file, not of the machine that checked it out.
+#
+# Without this file every clone uses its own core.autocrlf: on Windows a file
+# can come back as CRLF, show as "modified" with an equal number of insertions
+# and deletions, and put line-ending noise into history. `eol=lf` pins the
+# working tree too, so a Windows checkout writes LF and the diff stays about
+# the code.
+* text=auto eol=lf
+
+# Binaries: never normalise, never diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
