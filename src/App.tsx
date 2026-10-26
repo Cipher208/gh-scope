@@ -1,4 +1,4 @@
-import { Component, useCallback, useEffect, useMemo, useState, type ErrorInfo, type FormEvent, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ErrorInfo, type FormEvent, type ReactNode } from 'react';
 import type { GHRepo, GHUser, RateInfo } from './lib/github';
 import {
   GHError,
@@ -11,6 +11,8 @@ import {
   prefersReducedMotion,
 } from './lib/github';
 import { LangProvider, useLang, useLocale, useT } from './lib/i18n';
+import { loginFromHash, watchHash } from './lib/hash';
+import { readToken, writeToken } from './lib/token';
 import { RepoCard } from './components/RepoCard';
 import { ReadmeModal } from './components/ReadmeModal';
 import { SearchView } from './components/SearchView';
@@ -52,27 +54,6 @@ const HISTORY_KEY = 'ghscope:history';
 const BOOKMARKS_KEY = 'ghscope:bookmarks';
 const COLLECTIONS_KEY = 'ghscope:collections';
 const WATCH_KEY = 'ghscope:watch';
-const TOKEN_KEY = 'ghscope:token';
-
-/* The API layer has taken a token from the start — `fetchMe`, `fetchMyRepos`
- * and the `authenticated` flag on the rate meter all expect one. The UI just
- * never asked for it, so every call site passed `null`. */
-function readToken(): string {
-  try {
-    return localStorage.getItem(TOKEN_KEY) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function writeToken(value: string) {
-  try {
-    if (value) localStorage.setItem(TOKEN_KEY, value);
-    else localStorage.removeItem(TOKEN_KEY);
-  } catch {
-    /* private mode */
-  }
-}
 
 type View = 'browse' | 'search' | 'orgs' | 'compare' | 'duel' | 'collections' | 'radar' | 'discover' | 'saved';
 
@@ -205,11 +186,11 @@ function Shell() {
     }
   }, [theme]);
 
-  /* github token — empty string means anonymous */
-  const [token, setToken] = useState<string>(readToken);
+  /* github token — empty string means anonymous; session-scoped on purpose */
+  const [token, setToken] = useState<string>(() => readToken(sessionStorage, localStorage));
   const [settingsOpen, setSettingsOpen] = useState(false);
   const updateToken = useCallback((value: string) => {
-    writeToken(value);
+    writeToken(sessionStorage, value);
     setToken(value);
   }, []);
 
@@ -373,6 +354,8 @@ function Shell() {
   const [langFilter, setLangFilter] = useState('all');
   const [showForks, setShowForks] = useState(true);
   const [readmeFor, setReadmeFor] = useState<GHRepo | null>(null);
+  /* what the hash currently points at, so a hash echo from our own load() is not a second load */
+  const activeLogin = useRef<string | null>(null);
 
   const pushHistory = useCallback((login: string) => {
     setHistory((h) => {
@@ -405,6 +388,7 @@ function Shell() {
         setLangFilter('all');
         setShowForks(true);
         pushHistory(user.login);
+        activeLogin.current = user.login;
         window.location.hash = user.login;
       } catch (e) {
         setProfile(null);
@@ -419,11 +403,20 @@ function Shell() {
 
   /* initial load: deep link #login or most recent */
   useEffect(() => {
-    const hash = window.location.hash.replace(/^#\/?/, '');
-    const initial = hash || readHistory()[0];
+    const initial = loginFromHash(window.location.hash) || readHistory()[0];
     if (initial) void load(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* a link opened in an already-running tab only fires hashchange — follow it */
+  useEffect(
+    () =>
+      watchHash(window, (login) => {
+        if (!login || login === activeLogin.current) return;
+        void load(login);
+      }),
+    [load],
+  );
 
   /* keyboard: "/" focuses search */
   useEffect(() => {

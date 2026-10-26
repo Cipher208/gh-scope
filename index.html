@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- GitHub Pages cannot send headers, so the policy has to travel as a meta
+         tag. Two consequences worth naming: `frame-ancestors` is ignored in
+         meta (clickjacking protection needs a header this host will not send),
+         and `style-src` needs 'unsafe-inline' because React writes style
+         attributes at runtime (language bars, progress fills). Scripts are the
+         part that matters: `script-src 'self'`, no inline blocks, no eval. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
     <!-- No Cache-Control meta here on purpose. Browsers only honour a meta
          http-equiv for a short list of names and Cache-Control is not one of
          them, so these two lines read as a cache policy while doing nothing.
@@ -26,15 +36,7 @@
       href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <script>
-      /* apply persisted theme before first paint to avoid a flash */
-      (function () {
-        try {
-          var t = localStorage.getItem('ghscope:theme');
-          if (t === 'light') document.documentElement.dataset.theme = 'light';
-        } catch (e) {}
-      })();
-    </script>
+    <script src="./theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

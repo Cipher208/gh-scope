@@ -14,11 +14,13 @@ interface Props {
  * token that raises the API limit, and the translation endpoint that replaces
  * the undocumented public transport.
  *
- * Both live in localStorage and nowhere else. That is not a shortcut — this is
- * a static site, so there is no server that could hold a key on the visitor's
- * behalf, and anything baked into the bundle would be public by construction.
- * The honest design for static hosting is: the visitor supplies their own keys,
- * or they get the anonymous tier.
+ * Both are supplied by the visitor, never by the site: this is a static page,
+ * so there is no server that could hold a key on their behalf, and anything
+ * baked into the bundle would be public by construction.
+ *
+ * They do not get the same storage. The token is a credential and lives in
+ * sessionStorage, so closing the tab ends it. The translation endpoint is not a
+ * credential, so it may survive in localStorage.
  */
 export function SettingsModal({ token, onTokenChange, onClose }: Props) {
   const t = useT();

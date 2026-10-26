@@ -26,7 +26,7 @@ export const en = {
   settings: {
     title: 'Settings',
     close: 'Close',
-    stored: 'Both fields are stored in this browser only. Nothing is sent anywhere but the services you name.',
+    stored: 'Both fields stay in this browser. The token lives only until you close the tab; the endpoint is kept for next time.',
     tokenTitle: 'GitHub token',
     tokenNote:
       'Without a token the API gives 60 requests/hour per IP and hides private repositories. A classic token with no scopes is enough to lift the limit; add repo scope only if you want private repos to show.',
@@ -380,7 +380,7 @@ export const ru: Dict = {
   settings: {
     title: 'Настройки',
     close: 'Закрыть',
-    stored: 'Оба поля хранятся только в этом браузере. Наружу уходит ровно то, что нужно названным вами сервисам.',
+    stored: 'Оба поля остаются в этом браузере. Токен живёт до закрытия вкладки, адрес переводчика сохраняется на будущее.',
     tokenTitle: 'Токен GitHub',
     tokenNote:
       'Без токена API даёт 60 запросов в час на IP и скрывает приватные репозитории. Чтобы поднять лимит, хватит классического токена без единого scope; добавляйте scope repo только если хотите видеть приватные репо.',
